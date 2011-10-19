@@ -1,0 +1,21 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+  <xi:include href="layout.html" />
+  <head>
+    <title>detail</title>
+  </head>
+  <body>
+    <div class="page-header">
+      <h1>${shirt.name}</h1>
+    </div>
+    <img py:if="photo_url" src="${photo_url}" alt="${shirt.name}" />
+    <blockquote py:for="note in shirt.notes">
+    ${note.formatted}
+    <small>${note.when.strftime('%d/%m/%Y %H%M')}</small>
+    </blockquote>
+    <div py:if="g.user">
+      <a class="btn small" href="${url_for('shirt_edit', id=shirt.id)}">Edit</a>
+    </div>
+  </body>
+</html>

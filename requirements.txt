@@ -1,0 +1,9 @@
+python-dateutil<2.0
+decorator
+Flask
+Flask-Genshi
+Flask-OpenID
+Flask-SQLAlchemy
+Flask-Uploads
+Flask-WTF
+Markdown

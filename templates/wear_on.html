@@ -1,0 +1,56 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+  <xi:include href="layout.html" />
+  <head>
+    <title>wear</title>
+  </head>
+  <body>
+    <div class="page-header">
+      <h1>Wear a shirt</h1>
+    </div>
+    <form method="POST" action="">
+    ${form.hidden_tag()}
+    <fieldset>
+      <div class="clearfix ${'error' if form.shirt.errors else ''}">
+        ${form.shirt.label}
+        <div class="input">
+          ${form.shirt(class_='span6')}
+          <py:for each="error in form.shirt.errors">
+            <span class="help-block">${error}</span>
+          </py:for>
+        </div>
+      </div>
+
+      <div class="clearfix ${'error' if form.when.errors else ''}">
+        ${form.when.label}
+        <div class="input">
+          <div class="input-prepend">
+            <span class="add-on">${day}/${month}/${year} at:</span>
+            ${form.when(class_='span2')}
+          </div>
+          <span class="help-block">Optional</span>
+          <py:for each="error in form.when.errors">
+            <span class="help-block">${error}</span>
+          </py:for>
+        </div>
+      </div>
+
+      <div class="clearfix ${'error' if form.description.errors else ''}">
+        ${form.description.label}
+        <div class="input">
+          ${form.description(class_='span8', rows=3, cols=120)}
+          <span class="help-block">Optional</span>
+          <py:for each="error in form.description.errors">
+            <span class="help-block">${error}</span>
+          </py:for>
+        </div>
+      </div>
+
+      <div class="actions">
+        <input class="btn small primary" type="submit" name="submit" value="Wear" />
+      </div>
+    </fieldset>
+    </form>
+  </body>
+</html>
