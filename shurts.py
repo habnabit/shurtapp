@@ -23,8 +23,8 @@ app.config.from_envvar('SHURT_SETTINGS')
 genshi_wrap = Genshi(app)
 genshi_wrap.extensions['html'] = 'html5'
 
-shirt_set = UploadSet('shirts', extensions=IMAGES)
-configure_uploads(app, [shirt_set])
+photo_set = UploadSet('photos', extensions=IMAGES)
+configure_uploads(app, [photo_set])
 
 db = SQLAlchemy(app)
 
@@ -50,10 +50,33 @@ class Note(db.Model):
     def formatted(self):
         return genshi.Markup(markdown.markdown(self.note))
 
+photo_notes_table = db.Table(
+    'photo_notes', db.metadata,
+    db.Column('photo_id', db.Integer(), db.ForeignKey('photos.id'), primary_key=True),
+    db.Column('note_id', db.Integer(), db.ForeignKey('notes.id'), primary_key=True),
+)
+
+class Photo(db.Model):
+    __tablename__ = 'photos'
+    id = db.Column(db.Integer(), primary_key=True)
+    when = db.Column(db.DateTime(), nullable=False, default=datetime.datetime.now)
+    filename = db.Column(db.String(), nullable=False)
+    notes = db.relationship(Note, secondary=photo_notes_table)
+
+    @property
+    def url(self):
+        return photo_set.url(self.filename)
+
 shirt_notes_table = db.Table(
     'shirt_notes', db.metadata,
     db.Column('shirt_id', db.Integer(), db.ForeignKey('shirts.id'), primary_key=True),
     db.Column('note_id', db.Integer(), db.ForeignKey('notes.id'), primary_key=True),
+)
+
+shirt_photos_table = db.Table(
+    'shirt_photos', db.metadata,
+    db.Column('shirt_id', db.Integer(), db.ForeignKey('shirts.id'), primary_key=True),
+    db.Column('photo_id', db.Integer(), db.ForeignKey('photos.id'), primary_key=True),
 )
 
 class Shirt(db.Model):
@@ -61,13 +84,19 @@ class Shirt(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     name = db.Column(db.String(), nullable=False)
     acquired = db.Column(db.Date())
-    photo_filename = db.Column(db.String())
     notes = db.relationship(Note, secondary=shirt_notes_table)
+    photos = db.relationship(Photo, secondary=shirt_photos_table)
 
 wearing_notes_table = db.Table(
     'wearing_notes', db.metadata,
     db.Column('wearing_id', db.Integer(), db.ForeignKey('wearings.id'), primary_key=True),
     db.Column('note_id', db.Integer(), db.ForeignKey('notes.id'), primary_key=True),
+)
+
+wearing_photos_table = db.Table(
+    'wearing_photos', db.metadata,
+    db.Column('wearing_id', db.Integer(), db.ForeignKey('wearings.id'), primary_key=True),
+    db.Column('photo_id', db.Integer(), db.ForeignKey('photos.id'), primary_key=True),
 )
 
 class Wearing(db.Model):
@@ -78,6 +107,7 @@ class Wearing(db.Model):
     when = db.Column(db.Date(), nullable=False, index=True)
     specifically_when = db.Column(db.Time())
     notes = db.relationship(Note, secondary=wearing_notes_table)
+    photos = db.relationship(Photo, secondary=wearing_photos_table)
 
 @app.before_request
 def lookup_current_user():
@@ -174,27 +204,19 @@ def shirts():
 @app.route('/shirts/<id>')
 def shirt_detail(id):
     shirt = Shirt.query.get(id)
-    if shirt.photo_filename:
-        photo_url = shirt_set.url(shirt.photo_filename)
-    else:
-        photo_url = None
-    return render_response('shirt_detail.html', dict(shirt=shirt, photo_url=photo_url))
+    return render_response('shirt_detail.html', dict(shirt=shirt))
 
 @app.route('/shirts/edit/<id>')
 @needs_login
 def shirt_edit(id):
     shirt = Shirt.query.get(id)
-    if shirt.photo_filename:
-        photo_url = shirt_set.url(shirt.photo_filename)
-    else:
-        photo_url = None
-    return render_response('shirt_detail.html', dict(shirt=shirt, photo_url=photo_url))
+    return render_response('shirt_detail.html', dict(shirt=shirt))
 
 class AddForm(wtf.Form):
     name = wtf.TextField(validators=[wtf.required()])
-    description = wtf.TextField('Initial notes', widget=wtf.TextArea(), validators=[wtf.optional()])
+    description = wtf.TextField('Initial shirt notes', widget=wtf.TextArea(), validators=[wtf.optional()])
     acquired = DateField('Acquired on', validators=[wtf.optional()])
-    photo = wtf.FileField('Shirt photo', validators=[wtf.optional(), wtf.file_allowed(shirt_set)])
+    photo = wtf.FileField('Shirt photo', validators=[wtf.optional(), wtf.file_allowed(photo_set)])
 
 @app.route('/shirts/add', methods=['GET', 'POST'])
 @needs_login
@@ -203,9 +225,12 @@ def shirt_add():
     if form.validate_on_submit():
         shirt = Shirt(
             name=form.name.data,
-            acquired=form.acquired.data,
-            photo_filename=shirt_set.save(request.files['photo']) if request.files.get('photo') else None)
+            acquired=form.acquired.data)
         db.session.add(shirt)
+        if request.files.get('photo'):
+            photo = Photo(filename=photo_set.save(request.files['photo']))
+            shirt.photos.append(photo)
+            db.session.add(photo)
         if form.description.data:
             note = Note(note=form.description.data)
             shirt.notes.append(note)

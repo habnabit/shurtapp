@@ -9,7 +9,7 @@
     <div class="page-header">
       <h1>${shirt.name}</h1>
     </div>
-    <img py:if="photo_url" src="${photo_url}" alt="${shirt.name}" />
+    <img py:for="photo in shirt.photos" src="${photo.url}" alt="${shirt.name}" />
     <blockquote py:for="note in shirt.notes">
     ${note.formatted}
     <small>${note.when.strftime('%d/%m/%Y %H%M')}</small>
