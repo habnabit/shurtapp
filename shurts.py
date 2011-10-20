@@ -45,59 +45,51 @@ class Note(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     when = db.Column(db.DateTime(), nullable=False, default=datetime.datetime.now)
     note = db.Column(db.String(), nullable=False)
+    type = db.Column(db.String())
+    __mapper_args__ = dict(polymorphic_on=type)
 
     @property
     def formatted(self):
         return genshi.Markup(markdown.markdown(self.note))
-
-photo_notes_table = db.Table(
-    'photo_notes', db.metadata,
-    db.Column('photo_id', db.Integer(), db.ForeignKey('photos.id'), primary_key=True),
-    db.Column('note_id', db.Integer(), db.ForeignKey('notes.id'), primary_key=True),
-)
 
 class Photo(db.Model):
     __tablename__ = 'photos'
     id = db.Column(db.Integer(), primary_key=True)
     when = db.Column(db.DateTime(), nullable=False, default=datetime.datetime.now)
     filename = db.Column(db.String(), nullable=False)
-    notes = db.relationship(Note, secondary=photo_notes_table)
+    type = db.Column(db.String())
+    __mapper_args__ = dict(polymorphic_on=type)
 
     @property
     def url(self):
         return photo_set.url(self.filename)
 
-shirt_notes_table = db.Table(
-    'shirt_notes', db.metadata,
-    db.Column('shirt_id', db.Integer(), db.ForeignKey('shirts.id'), primary_key=True),
-    db.Column('note_id', db.Integer(), db.ForeignKey('notes.id'), primary_key=True),
-)
-
-shirt_photos_table = db.Table(
-    'shirt_photos', db.metadata,
-    db.Column('shirt_id', db.Integer(), db.ForeignKey('shirts.id'), primary_key=True),
-    db.Column('photo_id', db.Integer(), db.ForeignKey('photos.id'), primary_key=True),
-)
+class PhotoNote(Note):
+    __tablename__ = 'photo_notes'
+    __mapper_args__ = dict(polymorphic_identity='photo')
+    note_id = db.Column(db.Integer(), db.ForeignKey(Note.id), primary_key=True)
+    photo_id = db.Column(db.Integer(), db.ForeignKey(Photo.id), primary_key=True)
+    photo = db.relationship(Photo, backref='notes')
 
 class Shirt(db.Model):
     __tablename__ = 'shirts'
     id = db.Column(db.Integer(), primary_key=True)
     name = db.Column(db.String(), nullable=False)
     acquired = db.Column(db.Date())
-    notes = db.relationship(Note, secondary=shirt_notes_table)
-    photos = db.relationship(Photo, secondary=shirt_photos_table)
 
-wearing_notes_table = db.Table(
-    'wearing_notes', db.metadata,
-    db.Column('wearing_id', db.Integer(), db.ForeignKey('wearings.id'), primary_key=True),
-    db.Column('note_id', db.Integer(), db.ForeignKey('notes.id'), primary_key=True),
-)
+class ShirtNote(Note):
+    __tablename__ = 'shirt_notes'
+    __mapper_args__ = dict(polymorphic_identity='shirt')
+    note_id = db.Column(db.Integer(), db.ForeignKey(Note.id), primary_key=True)
+    shirt_id = db.Column(db.Integer(), db.ForeignKey(Shirt.id), primary_key=True)
+    shirt = db.relationship(Shirt, backref='notes')
 
-wearing_photos_table = db.Table(
-    'wearing_photos', db.metadata,
-    db.Column('wearing_id', db.Integer(), db.ForeignKey('wearings.id'), primary_key=True),
-    db.Column('photo_id', db.Integer(), db.ForeignKey('photos.id'), primary_key=True),
-)
+class ShirtPhoto(Photo):
+    __tablename__ = 'shirt_photos'
+    __mapper_args__ = dict(polymorphic_identity='shirt')
+    photo_id = db.Column(db.Integer(), db.ForeignKey(Photo.id), primary_key=True)
+    shirt_id = db.Column(db.Integer(), db.ForeignKey(Shirt.id), primary_key=True)
+    shirt = db.relationship(Shirt, backref='photos')
 
 class Wearing(db.Model):
     __tablename__ = 'wearings'
@@ -106,8 +98,20 @@ class Wearing(db.Model):
     shirt = db.relationship(Shirt, backref='wearings')
     when = db.Column(db.Date(), nullable=False, index=True)
     specifically_when = db.Column(db.Time())
-    notes = db.relationship(Note, secondary=wearing_notes_table)
-    photos = db.relationship(Photo, secondary=wearing_photos_table)
+
+class WearingNote(Note):
+    __tablename__ = 'wearing_notes'
+    __mapper_args__ = dict(polymorphic_identity='wearing')
+    note_id = db.Column(db.Integer(), db.ForeignKey(Note.id), primary_key=True)
+    wearing_id = db.Column(db.Integer(), db.ForeignKey(Wearing.id), primary_key=True)
+    wearing = db.relationship(Wearing, backref='notes')
+
+class WearingPhoto(Photo):
+    __tablename__ = 'wearing_photos'
+    __mapper_args__ = dict(polymorphic_identity='wearing')
+    photo_id = db.Column(db.Integer(), db.ForeignKey(Photo.id), primary_key=True)
+    wearing_id = db.Column(db.Integer(), db.ForeignKey(Wearing.id), primary_key=True)
+    wearing = db.relationship(Wearing, backref='photos')
 
 @app.before_request
 def lookup_current_user():
@@ -187,8 +191,7 @@ def wear_on(day, month, year):
                           when=datetime.date(year, month, day))
         db.session.add(wearing)
         if form.description.data:
-            note = Note(note=form.description.data)
-            wearing.notes.append(note)
+            note = WearingNote(note=form.description.data, wearing=wearing)
             db.session.add(note)
         db.session.commit()
         return redirect(url_for('wearing_calendar', month=month, year=year))
@@ -228,12 +231,10 @@ def shirt_add():
             acquired=form.acquired.data)
         db.session.add(shirt)
         if request.files.get('photo'):
-            photo = Photo(filename=photo_set.save(request.files['photo']))
-            shirt.photos.append(photo)
+            photo = ShirtPhoto(filename=photo_set.save(request.files['photo']), shirt=shirt)
             db.session.add(photo)
         if form.description.data:
-            note = Note(note=form.description.data)
-            shirt.notes.append(note)
+            note = ShirtNote(note=form.description.data, shirt=shirt)
             db.session.add(note)
         db.session.commit()
         return redirect(url_for('shirts'))
