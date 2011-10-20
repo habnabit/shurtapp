@@ -100,7 +100,12 @@ def login():
 def after_login(resp):
     session['openid'] = resp.identity_url
     user = Editor.query.filter_by(openid=resp.identity_url).first()
-    if user is None:
+    if user is None and session.get('allow_creation'):
+        user = Editor(openid=resp.identity_url)
+        db.session.add(user)
+        db.session.commit()
+        del session['allow_creation']
+    elif user is None:
         abort(403)
     g.user = user
     return redirect(oid.get_next_url())
@@ -118,6 +123,9 @@ def needs_login(f, *a, **kw):
 
 @app.route('/')
 def index():
+    if not g.user and not Editor.query.first():
+        session['allow_creation'] = True
+        return redirect(url_for('login'))
     today = datetime.datetime.now()
     return wearing_calendar(today.month, today.year, today)
 
