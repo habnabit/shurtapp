@@ -163,7 +163,7 @@ def index():
     today = datetime.datetime.now()
     return wearing_calendar(today.month, today.year, today)
 
-@app.route('/<int:year>/<int:month>/')
+@app.route('/<int:year>/<int:month>')
 def wearing_calendar(month, year, today=None):
     first_day = datetime.date(year, month, 1)
     last_day = first_day + last_day_delta
@@ -199,12 +199,12 @@ def wear_on(day, month, year):
     shirts = Shirt.query.all()
     return render_response('wear_on.html', dict(day=day, month=month, year=year, form=form, shirts=shirts))
 
-@app.route('/shirts/')
+@app.route('/shirts')
 def shirts():
     shirts = Shirt.query.order_by(Shirt.name).all()
     return render_response('shirts.html', dict(shirts=shirts))
 
-@app.route('/shirts/<id>')
+@app.route('/shirts/<int:id>')
 def shirt_detail(id):
     shirt = Shirt.query.get(id)
     return render_response('shirt_detail.html', dict(shirt=shirt))
@@ -213,7 +213,7 @@ class EditShirtForm(wtf.Form):
     name = wtf.TextField(validators=[wtf.required()])
     acquired = DateField('Acquired on', validators=[wtf.optional()])
 
-@app.route('/shirts/edit/<id>', methods=['GET', 'POST'])
+@app.route('/shirts/edit/<int:id>', methods=['GET', 'POST'])
 @needs_login
 def shirt_edit(id):
     shirt = Shirt.query.get(id)
