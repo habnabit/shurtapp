@@ -14,7 +14,7 @@
       <h4>${day}</h4>
       <ul class="unstyled">
         <li py:for="wearing in wearing_map[day]">
-        <a href="${url_for('shirt_detail', id=wearing.shirt.id)}">${wearing.shirt.name}</a>
+        <a href="${url_for('wearing_detail', id=wearing.id)}">${wearing.shirt.name}</a>
         </li>
         <li py:if="g.user"><a href="${url_for('wear_on', day=day, month=month, year=year)}">Wear...</a></li>
       </ul>

@@ -11,7 +11,9 @@
     </div>
     <p py:choose="photo.type">
     Photo of
-    <a py:when="'shirt'" href="${url_for('shirt_detail', id=photo.shirt.id)}">${photo.shirt.name}</a>.
+    <a py:when="'shirt'" href="${url_for('shirt_detail', id=photo.shirt.id)}">${photo.shirt.name}</a><a
+    py:when="'wearing'" href="${url_for('wearing_detail', id=photo.wearing.id)}">
+    wearing ${photo.wearing.shirt.name} on ${photo.wearing.when.strftime('%d/%m/%Y')}</a>.
     </p>
     <img src="${photo.url}" alt="photo" />
     <p>Added on ${photo.when.strftime('%d/%m/%Y %H%M')}.</p>

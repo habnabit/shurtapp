@@ -12,10 +12,10 @@
     <p>
     Wearing
     <a href="${url_for('shirt_detail', id=wearing.shirt.id)}">${wearing.shirt.name}</a>
-    on ${wearing.when.strftime('%d/%m/%Y')}
+    on ${wearing.when.strftime('%d/%m/%Y')}.
     </p>
     <blockquote py:for="photo in wearing.photos">
-    <img src="${photo.url}" alt="wearing" />
+    <a href="${url_for('photo_detail', id=photo.id)}"><img src="${photo.url}" alt="wearing" /></a>
     <small>${photo.when.strftime('%d/%m/%Y %H%M')}</small>
     <blockquote py:for="note in photo.notes">
     ${note.formatted}

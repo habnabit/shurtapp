@@ -13,7 +13,7 @@
       Acquired on ${shirt.acquired}.
     </p>
     <blockquote py:for="photo in shirt.photos">
-    <img src="${photo.url}" alt="${shirt.name}" />
+    <a href="${url_for('photo_detail', id=photo.id)}"><img src="${photo.url}" alt="${shirt.name}" /></a>
     <small>${photo.when.strftime('%d/%m/%Y %H%M')}</small>
     <blockquote py:for="note in photo.notes">
     ${note.formatted}
