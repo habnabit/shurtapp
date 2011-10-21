@@ -9,7 +9,17 @@
     <div class="page-header">
       <h1>${shirt.name}</h1>
     </div>
+    <p py:if="shirt.acquired">
+      Acquired on ${shirt.acquired}.
+    </p>
+    <blockquote py:for="photo in shirt.photos">
     <img py:for="photo in shirt.photos" src="${photo.url}" alt="${shirt.name}" />
+    <small>${photo.when.strftime('%d/%m/%Y %H%M')}</small>
+    <blockquote py:for="note in photo.notes">
+    ${note.formatted}
+    <small>${note.when.strftime('%d/%m/%Y %H%M')}</small>
+    </blockquote>
+    </blockquote>
     <blockquote py:for="note in shirt.notes">
     ${note.formatted}
     <small>${note.when.strftime('%d/%m/%Y %H%M')}</small>
