@@ -199,6 +199,26 @@ def wear_on(day, month, year):
     shirts = Shirt.query.all()
     return render_response('wear_on.html', dict(day=day, month=month, year=year, form=form, shirts=shirts))
 
+class AddNoteForm(wtf.Form):
+    note = wtf.TextField('Add a note', widget=wtf.TextArea(), validators=[wtf.required()])
+
+@app.route('/photos/<int:id>')
+def photo_detail(id):
+    photo = Photo.query.get(id)
+    return render_response('photo_detail.html', dict(photo=photo, form=AddNoteForm()))
+
+@app.route('/photos/<int:id>/note', methods=['POST'])
+@needs_login
+def photo_note(id):
+    photo = Photo.query.get(id)
+    form = AddNoteForm()
+    if form.validate_on_submit():
+        note = PhotoNote(photo=photo, note=form.note.data)
+        db.session.add(note)
+        db.session.commit()
+        return redirect(url_for('photo_detail', id=id))
+    return render_response('photo_detail.html', dict(photo=photo, form=form))
+
 @app.route('/shirts')
 def shirts():
     shirts = Shirt.query.order_by(Shirt.name).all()

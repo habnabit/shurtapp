@@ -1,0 +1,43 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+  <xi:include href="layout.html" />
+  <head>
+    <title>detail</title>
+  </head>
+  <body>
+    <div class="page-header">
+      <h1>${photo.type.title()} photo</h1>
+    </div>
+    <p py:choose="photo.type">
+    Photo of
+    <a py:when="'shirt'" href="${url_for('shirt_detail', id=photo.shirt.id)}">${photo.shirt.name}</a>.
+    </p>
+    <img src="${photo.url}" alt="photo" />
+    <p>Added on ${photo.when.strftime('%d/%m/%Y %H%M')}.</p>
+    <blockquote py:for="note in photo.notes">
+    ${note.formatted}
+    <small>${note.when.strftime('%d/%m/%Y %H%M')}</small>
+    </blockquote>
+    <py:if test="g.user">
+      <form method="POST" enctype="multipart/form-data" action="${url_for('photo_note', id=photo.id)}">
+        ${form.hidden_tag()}
+        <fieldset>
+          <div class="clearfix ${'error' if form.note.errors else ''}">
+          ${form.note.label}
+          <div class="input">
+            ${form.note(class_='span8', rows=3, cols=120)}
+            <py:for each="error in form.note.errors">
+              <span class="help-block">${error}</span>
+              </py:for>
+          </div>
+          </div>
+
+          <div class="actions">
+            <input class="btn small primary" type="submit" name="submit" value="Add" />
+          </div>
+        </fieldset>
+      </form>
+    </py:if>
+  </body>
+</html>
