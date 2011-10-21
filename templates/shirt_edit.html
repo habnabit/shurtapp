@@ -1,0 +1,48 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+  <xi:include href="layout.html" />
+  <head>
+    <title>edit</title>
+  </head>
+  <body>
+    <div class="page-header">
+      <h1>Edit a shirt</h1>
+    </div>
+    <ul class="breadcrumb">
+      <li><a href="${url_for('index')}">Home</a> <span class="divider">&raquo;</span></li>
+      <li><a href="${url_for('shirts')}">Shirts</a> <span class="divider">&raquo;</span></li>
+      <li><a href="${url_for('shirt_detail', id=shirt.id)}">${shirt.name}</a> <span class="divider">&raquo;</span></li>
+      <li class="active">Edit</li>
+    </ul>
+    <form method="POST" enctype="multipart/form-data" action="">
+    ${form.hidden_tag()}
+    <fieldset>
+      <div class="clearfix ${'error' if form.name.errors else ''}">
+        ${form.name.label}
+        <div class="input">
+          ${form.name(class_='span8')}
+          <py:for each="error in form.name.errors">
+            <span class="help-block">${error}</span>
+          </py:for>
+        </div>
+      </div>
+
+      <div class="clearfix ${'error' if form.acquired.errors else ''}">
+        ${form.acquired.label}
+        <div class="input">
+          ${form.acquired(class_='span3')}
+          <span class="help-block">Optional</span>
+          <py:for each="error in form.acquired.errors">
+            <span class="help-block">${error}</span>
+          </py:for>
+        </div>
+      </div>
+
+      <div class="actions">
+        <input class="btn small primary" type="submit" name="submit" value="Edit" />
+      </div>
+    </fieldset>
+    </form>
+  </body>
+</html>

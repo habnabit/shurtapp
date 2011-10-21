@@ -209,22 +209,28 @@ def shirt_detail(id):
     shirt = Shirt.query.get(id)
     return render_response('shirt_detail.html', dict(shirt=shirt))
 
-@app.route('/shirts/edit/<id>')
+class EditShirtForm(wtf.Form):
+    name = wtf.TextField(validators=[wtf.required()])
+    acquired = DateField('Acquired on', validators=[wtf.optional()])
+
+@app.route('/shirts/edit/<id>', methods=['GET', 'POST'])
 @needs_login
 def shirt_edit(id):
     shirt = Shirt.query.get(id)
-    return render_response('shirt_detail.html', dict(shirt=shirt))
+    form = EditShirtForm(obj=shirt)
+    if form.validate_on_submit():
+        form.populate_obj(shirt)
+        db.session.commit()
+    return render_response('shirt_edit.html', dict(form=form, shirt=shirt))
 
-class AddForm(wtf.Form):
-    name = wtf.TextField(validators=[wtf.required()])
+class AddShirtForm(EditShirtForm):
     description = wtf.TextField('Initial shirt notes', widget=wtf.TextArea(), validators=[wtf.optional()])
-    acquired = DateField('Acquired on', validators=[wtf.optional()])
     photo = wtf.FileField('Shirt photo', validators=[wtf.optional(), wtf.file_allowed(photo_set)])
 
 @app.route('/shirts/add', methods=['GET', 'POST'])
 @needs_login
 def shirt_add():
-    form = AddForm()
+    form = AddShirtForm()
     if form.validate_on_submit():
         shirt = Shirt(
             name=form.name.data,
