@@ -7,25 +7,27 @@
   </head>
   <body>
     <div class="page-header">
-      <h1>${shirt.name}</h1>
+      <h1>Wearing ${wearing.shirt.name}</h1>
     </div>
-    <p py:if="shirt.acquired">
-      Acquired on ${shirt.acquired}.
+    <p>
+    Wearing
+    <a href="${url_for('shirt_detail', id=wearing.shirt.id)}">${wearing.shirt.name}</a>
+    on ${wearing.when.strftime('%d/%m/%Y')}
     </p>
-    <blockquote py:for="photo in shirt.photos">
-    <img src="${photo.url}" alt="${shirt.name}" />
+    <blockquote py:for="photo in wearing.photos">
+    <img src="${photo.url}" alt="wearing" />
     <small>${photo.when.strftime('%d/%m/%Y %H%M')}</small>
     <blockquote py:for="note in photo.notes">
     ${note.formatted}
     <small>${note.when.strftime('%d/%m/%Y %H%M')}</small>
     </blockquote>
     </blockquote>
-    <blockquote py:for="note in shirt.notes">
+    <blockquote py:for="note in wearing.notes">
     ${note.formatted}
     <small>${note.when.strftime('%d/%m/%Y %H%M')}</small>
     </blockquote>
     <py:if test="g.user">
-      <form method="POST" enctype="multipart/form-data" action="${url_for('shirt_note', id=shirt.id)}">
+      <form method="POST" enctype="multipart/form-data" action="${url_for('wearing_note', id=wearing.id)}">
         ${form.hidden_tag()}
         <fieldset>
 
@@ -52,7 +54,6 @@
 
           <div class="actions">
             <input class="btn small primary" type="submit" name="submit" value="Note" />
-            <a class="btn small" href="${url_for('shirt_edit', id=shirt.id)}">Edit</a>
           </div>
         </fieldset>
       </form>

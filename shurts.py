@@ -219,6 +219,32 @@ def photo_note(id):
         return redirect(url_for('photo_detail', id=id))
     return render_response('photo_detail.html', dict(photo=photo, form=form))
 
+class AddPhotoNoteForm(wtf.Form):
+    photo = wtf.FileField('Add a photo', validators=[wtf.optional(), wtf.file_allowed(photo_set)])
+    note = wtf.TextField('Add a note', widget=wtf.TextArea(), validators=[wtf.required()])
+
+@app.route('/wearings/<int:id>')
+def wearing_detail(id):
+    wearing = Wearing.query.get(id)
+    return render_response('wearing_detail.html', dict(wearing=wearing, form=AddPhotoNoteForm()))
+
+@app.route('/wearings/<int:id>/note', methods=['POST'])
+@needs_login
+def wearing_note(id):
+    wearing = Wearing.query.get(id)
+    form = AddPhotoNoteForm()
+    if form.validate_on_submit():
+        if request.files.get('photo'):
+            photo = WearingPhoto(filename=photo_set.save(request.files['photo']), wearing=wearing)
+            note = PhotoNote(note=form.note.data, photo=photo)
+            db.session.add_all([photo, note])
+        else:
+            note = WearingNote(wearing=wearing, note=form.note.data)
+            db.session.add(note)
+        db.session.commit()
+        return redirect(url_for('wearing_detail', id=id))
+    return render_response('wearing_detail.html', dict(wearing=wearing, form=form))
+
 @app.route('/shirts')
 def shirts():
     shirts = Shirt.query.order_by(Shirt.name).all()
@@ -227,7 +253,24 @@ def shirts():
 @app.route('/shirts/<int:id>')
 def shirt_detail(id):
     shirt = Shirt.query.get(id)
-    return render_response('shirt_detail.html', dict(shirt=shirt))
+    return render_response('shirt_detail.html', dict(shirt=shirt, form=AddPhotoNoteForm()))
+
+@app.route('/shirts/<int:id>/note', methods=['POST'])
+@needs_login
+def shirt_note(id):
+    shirt = Shirt.query.get(id)
+    form = AddPhotoNoteForm()
+    if form.validate_on_submit():
+        if request.files.get('photo'):
+            photo = ShirtPhoto(filename=photo_set.save(request.files['photo']), shirt=shirt)
+            note = PhotoNote(note=form.note.data, photo=photo)
+            db.session.add_all([photo, note])
+        else:
+            note = ShirtNote(shirt=shirt, note=form.note.data)
+            db.session.add(note)
+        db.session.commit()
+        return redirect(url_for('shirt_detail', id=id))
+    return render_response('shirt_detail.html', dict(shirt=shirt, form=form))
 
 class EditShirtForm(wtf.Form):
     name = wtf.TextField(validators=[wtf.required()])
