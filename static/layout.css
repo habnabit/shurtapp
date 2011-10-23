@@ -16,7 +16,16 @@ html, body {
 
 form, fieldset { margin-bottom: 0; }
 .actions { margin: 18px -20px -20px; }
-.calbox { font-size: .85em; min-height: 100px; width: 80px; padding: 0 10px; }
+.calbox {
+    font-size: .85em;
+    min-height: 100px;
+    width: 80px;
+    padding: 0 10px;
+}
+.calbox li {
+    padding-left: 6px;
+    text-indent: -6px;
+}
 .calbox.today {
     background-color: #eef; border: 1px black solid;
     -webkit-border-radius: 3px;
