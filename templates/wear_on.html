@@ -7,7 +7,7 @@
   </head>
   <body>
     <div class="page-header">
-      <h1>Wear a shirt</h1>
+      <h1>shirts: wear</h1>
     </div>
     <form method="POST" action="">
     ${form.hidden_tag()}
@@ -16,9 +16,7 @@
         ${form.shirt.label}
         <div class="input">
           ${form.shirt(class_='span6')}
-          <py:for each="error in form.shirt.errors">
-            <span class="help-block">${error}</span>
-          </py:for>
+          ${errors(form.shirt)}
         </div>
       </div>
 
@@ -30,9 +28,7 @@
             ${form.when(class_='span2')}
           </div>
           <span class="help-block">Optional</span>
-          <py:for each="error in form.when.errors">
-            <span class="help-block">${error}</span>
-          </py:for>
+          ${errors(form.when)}
         </div>
       </div>
 
@@ -41,9 +37,7 @@
         <div class="input">
           ${form.description(class_='span8', rows=3, cols=120)}
           <span class="help-block">Optional</span>
-          <py:for each="error in form.description.errors">
-            <span class="help-block">${error}</span>
-          </py:for>
+          ${errors(form.description)}
         </div>
       </div>
 

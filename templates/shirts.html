@@ -7,14 +7,14 @@
   </head>
   <body>
     <div class="page-header">
-      <h1>Shirt list</h1>
+      <h1>shirts: list</h1>
     </div>
     <ul>
       <li py:for="shirt in shirts">
-      <a href="${url_for('shirt_detail', id=shirt.id)}">${shirt.name}</a>
-      <py:if test="shirt.acquired">
-        (${shirt.acquired})
-      </py:if>
+        ${shirt_link(shirt)}
+        <py:if test="shirt.acquired">
+          (${shirt.acquired})
+        </py:if>
       </li>
     </ul>
     <div py:if="g.user">

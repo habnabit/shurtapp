@@ -7,25 +7,16 @@
   </head>
   <body>
     <div class="page-header">
-      <h1>Wearing ${wearing.shirt.name}</h1>
+      <h1>
+        wearing: ${shirt_link(wearing.shirt)} on ${wearing.when.strftime('%d/%m/%Y')}
+      </h1>
     </div>
-    <p>
-    Wearing
-    <a href="${url_for('shirt_detail', id=wearing.shirt.id)}">${wearing.shirt.name}</a>
-    on ${wearing.when.strftime('%d/%m/%Y')}.
-    </p>
     <blockquote py:for="photo in wearing.photos">
-    <a href="${url_for('photo_detail', id=photo.id)}"><img src="${photo.url}" alt="wearing" /></a>
-    <small>${photo.when.strftime('%d/%m/%Y %H%M')}</small>
-    <blockquote py:for="note in photo.notes">
-    ${note.formatted}
-    <small>${note.when.strftime('%d/%m/%Y %H%M')}</small>
+      ${photo_link(photo)}
+      <small>${photo.when.strftime('%d/%m/%Y %H%M')}</small>
+      ${notes_for(photo)}
     </blockquote>
-    </blockquote>
-    <blockquote py:for="note in wearing.notes">
-    ${note.formatted}
-    <small>${note.when.strftime('%d/%m/%Y %H%M')}</small>
-    </blockquote>
+    ${notes_for(wearing)}
     <py:if test="g.user">
       <form method="POST" enctype="multipart/form-data" action="${url_for('wearing_note', id=wearing.id)}">
         ${form.hidden_tag()}

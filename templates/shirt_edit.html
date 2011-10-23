@@ -7,7 +7,7 @@
   </head>
   <body>
     <div class="page-header">
-      <h1>Edit a shirt</h1>
+      <h1>editing shirt: ${shirt.name}</h1>
     </div>
     <ul class="breadcrumb">
       <li><a href="${url_for('index')}">Home</a> <span class="divider">&raquo;</span></li>
@@ -22,9 +22,7 @@
         ${form.name.label}
         <div class="input">
           ${form.name(class_='span8')}
-          <py:for each="error in form.name.errors">
-            <span class="help-block">${error}</span>
-          </py:for>
+          ${errors(form.name)}
         </div>
       </div>
 
@@ -33,9 +31,7 @@
         <div class="input">
           ${form.acquired(class_='span3')}
           <span class="help-block">Optional</span>
-          <py:for each="error in form.acquired.errors">
-            <span class="help-block">${error}</span>
-          </py:for>
+          ${errors(form.acquired)}
         </div>
       </div>
 

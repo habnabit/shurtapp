@@ -7,39 +7,32 @@
   </head>
   <body>
     <div class="page-header">
-      <h1>${photo.type.title()} photo</h1>
+    <h1 py:choose="photo.type">
+      photo:
+      <py:when test="'shirt'">${shirt_link(photo.shirt)}</py:when>
+      <py:when test="'wearing'">${wearing_link(photo.wearing, full=True)}</py:when>
+    </h1>
     </div>
-    <p py:choose="photo.type">
-    Photo of
-    <a py:when="'shirt'" href="${url_for('shirt_detail', id=photo.shirt.id)}">${photo.shirt.name}</a><a
-    py:when="'wearing'" href="${url_for('wearing_detail', id=photo.wearing.id)}">
-    wearing ${photo.wearing.shirt.name} on ${photo.wearing.when.strftime('%d/%m/%Y')}</a>.
-    </p>
+
     <img src="${photo.url}" alt="photo" />
     <p>Added on ${photo.when.strftime('%d/%m/%Y %H%M')}.</p>
-    <blockquote py:for="note in photo.notes">
-    ${note.formatted}
-    <small>${note.when.strftime('%d/%m/%Y %H%M')}</small>
-    </blockquote>
-    <py:if test="g.user">
-      <form method="POST" enctype="multipart/form-data" action="${url_for('photo_note', id=photo.id)}">
-        ${form.hidden_tag()}
-        <fieldset>
-          <div class="clearfix ${'error' if form.note.errors else ''}">
+    ${notes_for(photo)}
+
+    <form py:if="g.user" method="POST" enctype="multipart/form-data" action="${url_for('photo_note', id=photo.id)}">
+      ${form.hidden_tag()}
+      <fieldset>
+        <div class="clearfix ${'error' if form.note.errors else ''}">
           ${form.note.label}
           <div class="input">
             ${form.note(class_='span8', rows=3, cols=120)}
-            <py:for each="error in form.note.errors">
-              <span class="help-block">${error}</span>
-              </py:for>
+            ${errors(form.note)}
           </div>
-          </div>
+        </div>
 
-          <div class="actions">
-            <input class="btn small primary" type="submit" name="submit" value="Add" />
-          </div>
-        </fieldset>
-      </form>
-    </py:if>
+        <div class="actions">
+          <input class="btn small primary" type="submit" name="submit" value="Add" />
+        </div>
+      </fieldset>
+    </form>
   </body>
 </html>

@@ -1,4 +1,32 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:py="http://genshi.edgewall.org/" py:strip="">
+  <py:def function="errors(field)" py:for="error in field.errors">
+    <span class="help-block">${error}</span>
+  </py:def>
+
+  <img py:def="has_photo(o)" py:if="o.has_photo"
+       src="${url_for('.static', filename='icons/image.gif')}" alt="has photo" />
+
+  <py:def function="shirt_link(s)">
+    <a href="${url_for('shirt_detail', id=s.id)}">${s.name}</a> ${has_photo(s)}
+  </py:def>
+
+  <py:def function="wearing_link(w, full=False)" py:with="url = url_for('wearing_detail', id=w.id)">
+    <py:choose test="">
+      <a href="${url}" py:when="full">wearing ${w.shirt.name} on ${w.when.strftime('%d/%m/%Y')}</a>
+      <a href="${url}" py:otherwise="">${w.shirt.name}</a>
+    </py:choose>
+    ${has_photo(w)}
+  </py:def>
+
+  <a py:def="photo_link(p, alt=None)" href="${url_for('photo_detail', id=p.id)}">
+    <img src="${p.url}" alt="${alt or p.filename}" />
+  </a>
+
+  <blockquote py:def="notes_for(o)" py:for="note in o.notes">
+    ${note.formatted}
+    <small>${note.when.strftime('%d/%m/%Y %H%M')}</small>
+  </blockquote>
+
   <py:match path="head" once="true">
     <head py:attrs="select('@*')">
       <title py:with="title = list(select('title/text()'))">

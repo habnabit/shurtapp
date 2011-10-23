@@ -91,6 +91,8 @@ class ShirtPhoto(Photo):
     shirt_id = db.Column(db.Integer(), db.ForeignKey(Shirt.id), primary_key=True)
     shirt = db.relationship(Shirt, backref='photos')
 
+Shirt.has_photo = db.column_property(db.exists(['*']).where(Shirt.id == ShirtPhoto.shirt_id))
+
 class Wearing(db.Model):
     __tablename__ = 'wearings'
     id = db.Column(db.Integer(), primary_key=True)
@@ -112,6 +114,8 @@ class WearingPhoto(Photo):
     photo_id = db.Column(db.Integer(), db.ForeignKey(Photo.id), primary_key=True)
     wearing_id = db.Column(db.Integer(), db.ForeignKey(Wearing.id), primary_key=True)
     wearing = db.relationship(Wearing, backref='photos')
+
+Wearing.has_photo = db.column_property(db.exists(['*']).where(Wearing.id == WearingPhoto.wearing_id))
 
 @app.before_request
 def lookup_current_user():

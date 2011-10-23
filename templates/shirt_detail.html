@@ -7,55 +7,42 @@
   </head>
   <body>
     <div class="page-header">
-      <h1>${shirt.name}</h1>
+      <h1>shirt: ${shirt.name}</h1>
     </div>
     <p py:if="shirt.acquired">
       Acquired on ${shirt.acquired}.
     </p>
     <blockquote py:for="photo in shirt.photos">
-    <a href="${url_for('photo_detail', id=photo.id)}"><img src="${photo.url}" alt="${shirt.name}" /></a>
-    <small>${photo.when.strftime('%d/%m/%Y %H%M')}</small>
-    <blockquote py:for="note in photo.notes">
-    ${note.formatted}
-    <small>${note.when.strftime('%d/%m/%Y %H%M')}</small>
+      ${photo_link(photo, alt=shirt.name)}
+      <small>${photo.when.strftime('%d/%m/%Y %H%M')}</small>
+      ${notes_for(photo)}
     </blockquote>
-    </blockquote>
-    <blockquote py:for="note in shirt.notes">
-    ${note.formatted}
-    <small>${note.when.strftime('%d/%m/%Y %H%M')}</small>
-    </blockquote>
-    <py:if test="g.user">
-      <form method="POST" enctype="multipart/form-data" action="${url_for('shirt_note', id=shirt.id)}">
-        ${form.hidden_tag()}
-        <fieldset>
-
-          <div class="clearfix ${'error' if form.photo.errors else ''}">
+    ${notes_for(shirt)}
+    <form py:if="g.user" method="POST" enctype="multipart/form-data" action="${url_for('shirt_note', id=shirt.id)}">
+      ${form.hidden_tag()}
+      <fieldset>
+        <div class="clearfix ${'error' if form.photo.errors else ''}">
           ${form.photo.label}
           <div class="input">
             ${form.photo()}
             <span class="help-block">Optional; if this is specified, the note will be a photo note</span>
-            <py:for each="error in form.photo.errors">
-              <span class="help-block">${error}</span>
-              </py:for>
+            ${errors(form.photo)}
           </div>
-          </div>
+        </div>
 
-          <div class="clearfix ${'error' if form.note.errors else ''}">
+        <div class="clearfix ${'error' if form.note.errors else ''}">
           ${form.note.label}
           <div class="input">
             ${form.note(class_='span8', rows=3, cols=120)}
-            <py:for each="error in form.note.errors">
-              <span class="help-block">${error}</span>
-              </py:for>
+            ${errors(form.note)}
           </div>
-          </div>
+        </div>
 
-          <div class="actions">
-            <input class="btn small primary" type="submit" name="submit" value="Note" />
-            <a class="btn small" href="${url_for('shirt_edit', id=shirt.id)}">Edit</a>
-          </div>
-        </fieldset>
-      </form>
-    </py:if>
+        <div class="actions">
+          <input class="btn small primary" type="submit" name="submit" value="Note" />
+          <a class="btn small" href="${url_for('shirt_edit', id=shirt.id)}">Edit</a>
+        </div>
+      </fieldset>
+    </form>
   </body>
 </html>
