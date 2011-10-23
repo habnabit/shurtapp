@@ -2,11 +2,11 @@
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude">
   <xi:include href="layout.html" />
-  <head />
+  <head>
+    <title>calendar</title>
+  </head>
   <body>
-    <div class="page-header">
-      <h1>calendar: ${month}/${year}</h1>
-    </div>
+    <title>calendar: ${month}/${year}</title>
     <div class="calrow row" py:for="week in calendar">
     <div py:for="e, day in enumerate(week)" py:choose="day" class="calbox span2 ${'offset1' if e == 0 else ''} ${'today' if today and day == today.day else ''}">
     <py:when test="0">&nbsp;</py:when>

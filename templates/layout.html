@@ -41,7 +41,18 @@
   <py:match path="body" once="true">
     <body py:attrs="select('@*')"><div class="container">
       <div class="content">
-        ${select('*|text()')}
+        <div class="page-header">
+          <ul class="top-nav">
+            <li><a href="${url_for('index')}">home</a> /</li>
+            <li><a href="${url_for('shirts')}">shirts</a> /</li>
+            <li py:choose="">
+              <a py:when="g.user" href="${url_for('logout')}">logout</a>
+              <a py:otherwise="" href="${url_for('login')}">login</a>
+            </li>
+          </ul>
+          <h1>${select('title').select('text()|*')}</h1>
+        </div>
+        ${select('*[local-name()!="title"]')}
       </div>
     </div></body>
   </py:match>

@@ -6,13 +6,11 @@
     <title>detail</title>
   </head>
   <body>
-    <div class="page-header">
-    <h1 py:choose="photo.type">
+    <title py:choose="photo.type">
       photo:
       <py:when test="'shirt'">${shirt_link(photo.shirt)}</py:when>
       <py:when test="'wearing'">${wearing_link(photo.wearing, full=True)}</py:when>
-    </h1>
-    </div>
+    </title>
 
     <img src="${photo.url}" alt="photo" />
     <p>Added on ${photo.when.strftime('%d/%m/%Y %H%M')}.</p>
