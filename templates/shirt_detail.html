@@ -32,12 +32,14 @@
           ${form.note.label}
           <div class="input">
             ${form.note(class_='span8', rows=3, cols=120)}
+            <span class="help-block">Optional; if this isn't specified, a photo must be</span>
             ${errors(form.note)}
           </div>
         </div>
 
         <div class="actions">
-          <input class="btn small primary" type="submit" name="submit" value="Note" />
+          ${form.submit_note(class_="btn small primary span2")}
+          ${form.submit_email(class_="btn small span3")}
           <a class="btn small" href="${url_for('shirt_edit', id=shirt.id)}">Edit</a>
         </div>
       </fieldset>

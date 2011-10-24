@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for, request, g, session, abort
+from flask import Flask, redirect, url_for, request, g, session, abort, jsonify
 from flaskext.sqlalchemy import SQLAlchemy
 from flaskext.uploads import UploadSet, IMAGES, configure_uploads
 from flaskext.genshi import Genshi, render_response
@@ -14,6 +14,8 @@ import calendar
 import datetime
 import markdown
 import genshi
+import urllib
+import uuid
 
 calendar.setfirstweekday(6)
 last_day_delta = relativedelta(day=31)
@@ -93,6 +95,13 @@ class PendingPhoto(db.Model):
     key = db.Column(db.String(), nullable=False)
     type = db.Column(db.String(), nullable=False)
     __mapper_args__ = dict(polymorphic_on=type)
+
+    def generate_key(self):
+        self.key = uuid.uuid4().hex
+
+    @property
+    def mailto_link(self):
+        return 'mailto:%s?subject=%s' % (app.config['NOTES_EMAIL'], urllib.quote(self.key))
 
 with_pending_photos = rel_generator(PendingPhoto, 'pending_photos', singular='pending_photo')
 
@@ -224,7 +233,31 @@ def photo_note(id):
 
 class AddPhotoNoteForm(wtf.Form):
     photo = wtf.FileField('Add a photo', validators=[wtf.optional(), wtf.file_allowed(photo_set)])
-    note = wtf.TextField('Add a note', widget=wtf.TextArea(), validators=[wtf.required()])
+    note = wtf.TextField('Add a note', widget=wtf.TextArea())
+    submit_note = wtf.SubmitField('Note')
+    submit_email = wtf.SubmitField('Photo by e-mail')
+
+    def validate_note(self, field):
+        if not field.data and not self['photo'].data and not self['submit_email'].data:
+            raise wtf.ValidationError('At least a note or a photo must be specified')
+
+def add_photo_note(form, model, **model_params):
+    if request.files.get('photo'):
+        photo = model.Photo(filename=photo_set.save(request.files['photo']), **model_params)
+        db.session.add(photo)
+        if form.note.data:
+            note = Photo.Note(note=form.note.data, photo=photo)
+            db.session.add(note)
+    elif form.note.data:
+        note = model.Note(note=form.note.data, **model_params)
+        db.session.add(note)
+    elif form.submit_email.data:
+        pending = model.PendingPhoto(editor=g.user, **model_params)
+        pending.generate_key()
+        db.session.add(pending)
+        session['redirect_uri'] = pending.mailto_link
+    else:
+        raise ValueError('this should never happen ??')
 
 @app.route('/wearings/<int:id>')
 def wearing_detail(id):
@@ -237,13 +270,7 @@ def wearing_note(id):
     wearing = Wearing.query.get(id)
     form = AddPhotoNoteForm()
     if form.validate_on_submit():
-        if request.files.get('photo'):
-            photo = Wearing.Photo(filename=photo_set.save(request.files['photo']), wearing=wearing)
-            note = Photo.Note(note=form.note.data, photo=photo)
-            db.session.add_all([photo, note])
-        else:
-            note = Wearing.Note(wearing=wearing, note=form.note.data)
-            db.session.add(note)
+        add_photo_note(form, Wearing, wearing=wearing)
         db.session.commit()
         return redirect(url_for('wearing_detail', id=id))
     return render_response('wearing_detail.html', dict(wearing=wearing, form=form))
@@ -264,13 +291,7 @@ def shirt_note(id):
     shirt = Shirt.query.get(id)
     form = AddPhotoNoteForm()
     if form.validate_on_submit():
-        if request.files.get('photo'):
-            photo = Shirt.Photo(filename=photo_set.save(request.files['photo']), shirt=shirt)
-            note = Photo.Note(note=form.note.data, photo=photo)
-            db.session.add_all([photo, note])
-        else:
-            note = Shirt.Note(shirt=shirt, note=form.note.data)
-            db.session.add(note)
+        add_photo_note(form, Shirt, shirt=shirt)
         db.session.commit()
         return redirect(url_for('shirt_detail', id=id))
     return render_response('shirt_detail.html', dict(shirt=shirt, form=form))
@@ -312,3 +333,7 @@ def shirt_add():
         return redirect(url_for('shirts'))
 
     return render_response('shirt_add.html', dict(form=form))
+
+@app.route('/test')
+def email_test():
+    return redirect('mailto:_@habnab.it')

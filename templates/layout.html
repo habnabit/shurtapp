@@ -34,6 +34,11 @@
       </title>
       <link rel="stylesheet" href="http://twitter.github.com/bootstrap/1.3.0/bootstrap.min.css" />
       <link rel="stylesheet" href="${url_for('.static', filename='layout.css')}" />
+      <script type="text/javascript" py:if="session.get('redirect_uri')">
+        window.onload = function () {
+            document.location = "${session.pop('redirect_uri')}";
+        }
+      </script>
       ${select('*[local-name()!="title"]')}
     </head>
   </py:match>
@@ -51,6 +56,9 @@
             </li>
           </ul>
           <h1>${select('title').select('text()|*')}</h1>
+        </div>
+        <div py:for="category, msg in get_flashed_messages(with_categories=True)" class="alert-message ${category}">
+          <p>${msg}</p>
         </div>
         ${select('*[local-name()!="title"]')}
       </div>

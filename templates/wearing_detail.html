@@ -21,28 +21,26 @@
         <fieldset>
 
           <div class="clearfix ${'error' if form.photo.errors else ''}">
-          ${form.photo.label}
-          <div class="input">
-            ${form.photo()}
-            <span class="help-block">Optional; if this is specified, the note will be a photo note</span>
-            <py:for each="error in form.photo.errors">
-              <span class="help-block">${error}</span>
-              </py:for>
-          </div>
+            ${form.photo.label}
+            <div class="input">
+              ${form.photo()}
+              <span class="help-block">Optional; if this is specified, the note will be a photo note</span>
+              ${errors(form.photo)}
+            </div>
           </div>
 
           <div class="clearfix ${'error' if form.note.errors else ''}">
-          ${form.note.label}
-          <div class="input">
-            ${form.note(class_='span8', rows=3, cols=120)}
-            <py:for each="error in form.note.errors">
-              <span class="help-block">${error}</span>
-              </py:for>
-          </div>
+            ${form.note.label}
+            <div class="input">
+              ${form.note(class_='span8', rows=3, cols=120)}
+              <span class="help-block">Optional; if this isn't specified, a photo must be</span>
+              ${errors(form.note)}
+            </div>
           </div>
 
           <div class="actions">
-            <input class="btn small primary" type="submit" name="submit" value="Note" />
+            ${form.submit_note(class_="btn small primary span2")}
+            ${form.submit_email(class_="btn small span3")}
           </div>
         </fieldset>
       </form>
