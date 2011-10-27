@@ -41,6 +41,7 @@
           ${form.submit_note(class_="btn small primary span2")}
           ${form.submit_email(class_="btn small span3")}
           <a class="btn small" href="${url_for('shirt_edit', id=shirt.id)}">Edit</a>
+          <a class="btn danger small" href="${url_for('shirt_delete', id=shirt.id)}">Delete</a>
         </div>
       </fieldset>
     </form>

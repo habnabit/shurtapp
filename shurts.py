@@ -45,7 +45,7 @@ def rel_generator(parent, plural, singular=None):
                 '__mapper_args__': dict(polymorphic_identity=lower_child),
                 singular + '_id': db.Column(db.Integer(), db.ForeignKey(parent.id), primary_key=True),
                 lower_child + '_id': child_fk,
-                lower_child: db.relationship(cls, backref=plural)
+                lower_child: db.relationship(cls, backref=db.backref(plural, cascade='all, delete-orphan'))
             }
         )
         setattr(cls, 'has_' + singular, db.column_property(db.exists(['*']).where(cls.id == child_fk)))
@@ -84,13 +84,16 @@ class Photo(db.Model):
     def url(self):
         return photo_set.url(self.filename)
 
+    def detail_url(self):
+        return url_for('photo_detail', id=self.id)
+
 with_photos = rel_generator(Photo, 'photos')
 
 class PendingPhoto(db.Model):
     __tablename__ = 'pending_photos'
     id = db.Column(db.Integer(), primary_key=True)
     editor_id = db.Column(db.String(), db.ForeignKey(Editor.openid))
-    editor = db.relationship(Editor, backref='pending_photos')
+    editor = db.relationship(Editor, backref=db.backref('pending_photos', cascade='all, delete-orphan'))
     when = db.Column(db.DateTime(), nullable=False, default=datetime.datetime.now)
     key = db.Column(db.String(), nullable=False)
     type = db.Column(db.String(), nullable=False)
@@ -114,6 +117,9 @@ class Shirt(db.Model):
     name = db.Column(db.String(), nullable=False)
     acquired = db.Column(db.Date())
 
+    def detail_url(self):
+        return url_for('shirt_detail', id=self.id)
+
 @with_notes
 @with_photos
 @with_pending_photos
@@ -121,9 +127,12 @@ class Wearing(db.Model):
     __tablename__ = 'wearings'
     id = db.Column(db.Integer(), primary_key=True)
     shirt_id = db.Column(db.Integer(), db.ForeignKey(Shirt.id), nullable=False)
-    shirt = db.relationship(Shirt, backref='wearings')
+    shirt = db.relationship(Shirt, backref=db.backref('wearings', cascade='all, delete-orphan'))
     when = db.Column(db.Date(), nullable=False, index=True)
     specifically_when = db.Column(db.Time())
+
+    def detail_url(self):
+        return url_for('wearing_detail', id=self.id)
 
 @app.before_request
 def lookup_current_user():
@@ -213,6 +222,7 @@ def wear_on(day, month, year):
 
 class AddNoteForm(wtf.Form):
     note = wtf.TextField('Add a note', widget=wtf.TextArea(), validators=[wtf.required()])
+    submit_note = wtf.SubmitField('Note')
 
 @app.route('/photos/<int:id>')
 def photo_detail(id):
@@ -300,7 +310,7 @@ class EditShirtForm(wtf.Form):
     name = wtf.TextField(validators=[wtf.required()])
     acquired = DateField('Acquired on', validators=[wtf.optional()])
 
-@app.route('/shirts/edit/<int:id>', methods=['GET', 'POST'])
+@app.route('/shirts/<int:id>/edit', methods=['GET', 'POST'])
 @needs_login
 def shirt_edit(id):
     shirt = Shirt.query.get(id)
@@ -334,6 +344,38 @@ def shirt_add():
 
     return render_response('shirt_add.html', dict(form=form))
 
-@app.route('/test')
-def email_test():
-    return redirect('mailto:_@habnab.it')
+class DeleteForm(wtf.Form):
+    submit_delete = wtf.SubmitField('Confirm deletion')
+
+@app.route('/shirts/<int:id>/delete', methods=['GET', 'POST'])
+@needs_login
+def shirt_delete(id):
+    shirt = Shirt.query.get(id)
+    form = DeleteForm()
+    if form.validate_on_submit():
+        db.session.delete(shirt)
+        db.session.commit()
+        return redirect(url_for('shirts'))
+    return render_response('confirm_delete.html', dict(form=form, type='shirt', obj=shirt))
+
+@app.route('/wearings/<int:id>/delete', methods=['GET', 'POST'])
+@needs_login
+def wearing_delete(id):
+    wearing = Wearing.query.get(id)
+    form = DeleteForm()
+    if form.validate_on_submit():
+        db.session.delete(wearing)
+        db.session.commit()
+        return redirect(url_for('index'))
+    return render_response('confirm_delete.html', dict(form=form, type='wearing', obj=wearing))
+
+@app.route('/photos/<int:id>/delete', methods=['GET', 'POST'])
+@needs_login
+def photo_delete(id):
+    photo = Photo.query.get(id)
+    form = DeleteForm()
+    if form.validate_on_submit():
+        db.session.delete(photo)
+        db.session.commit()
+        return redirect(url_for('index'))
+    return render_response('confirm_delete.html', dict(form=form, type='photo', obj=photo))

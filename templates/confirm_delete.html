@@ -1,0 +1,34 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+  <xi:include href="layout.html" />
+  <head>
+    <title>deletion</title>
+  </head>
+  <body>
+    <py:choose test="type">
+      deleting
+      <title py:when="'shirt'">shirt: ${shirt_link(obj)}</title>
+      <title py:when="'wearing'">wearing: ${wearing_link(obj, full=True)}</title>
+      <title py:when="'photo'">photo: ${photo_link(obj)}</title>
+    </py:choose>
+    <p>
+      Are you sure that you want to delete
+      <py:choose test="type">
+        <py:when test="'shirt'">${shirt_link(obj)}</py:when>
+        <py:when test="'wearing'">${wearing_link(obj, full=True)}</py:when>
+        <py:when test="'photo'">${photo_link(obj)}</py:when>
+      </py:choose>
+      ?
+    </p>
+    <form method="POST" action="">
+      ${form.hidden_tag()}
+      <fieldset>
+        <div class="actions">
+          ${form.submit_delete(class_="btn small danger span3")}
+          <a class="btn small" href="${obj.detail_url()}">Cancel</a>
+        </div>
+      </fieldset>
+    </form>
+  </body>
+</html>

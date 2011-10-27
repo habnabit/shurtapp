@@ -28,7 +28,8 @@
         </div>
 
         <div class="actions">
-          <input class="btn small primary" type="submit" name="submit" value="Add" />
+          ${form.submit_note(class_="btn small primary span2")}
+          <a class="btn danger small" href="${url_for('photo_delete', id=photo.id)}">Delete</a>
         </div>
       </fieldset>
     </form>
