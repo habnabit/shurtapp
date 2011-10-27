@@ -32,6 +32,21 @@
         </div>
       </div>
 
+      <div class="clearfix ${'error' if form.also_wear.errors else ''}">
+        ${form.also_wear.label}
+        <div class="input">
+          <ul class="inputs-list">
+            <li>
+              <label>
+                ${form.also_wear()}
+                <span>Add a wearing for this shirt on today's date.</span>
+              </label>
+            </li>
+          </ul>
+          ${errors(form.also_wear)}
+        </div>
+      </div>
+
       <div class="clearfix ${'error' if form.photo.errors else ''}">
         ${form.photo.label}
         <div class="input">

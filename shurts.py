@@ -323,6 +323,7 @@ def shirt_edit(id):
 class AddShirtForm(EditShirtForm):
     description = wtf.TextField('Initial shirt notes', widget=wtf.TextArea(), validators=[wtf.optional()])
     photo = wtf.FileField('Shirt photo', validators=[wtf.optional(), wtf.file_allowed(photo_set)])
+    also_wear = wtf.BooleanField('Wearing today')
 
 @app.route('/shirts/add', methods=['GET', 'POST'])
 @needs_login
@@ -339,6 +340,9 @@ def shirt_add():
         if form.description.data:
             note = Shirt.Note(note=form.description.data, shirt=shirt)
             db.session.add(note)
+        if form.also_wear.data:
+            wearing = Wearing(shirt=shirt, when=datetime.date.today())
+            db.session.add(wearing)
         db.session.commit()
         return redirect(url_for('shirts'))
 
