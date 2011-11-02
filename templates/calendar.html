@@ -7,11 +7,9 @@
   </head>
   <body>
     <title>calendar: ${month}/${year}</title>
-    <div class="calrow row" py:for="week in calendar">
-    <div py:for="e, day in enumerate(week)" py:choose="day" class="calbox span2 ${'offset1' if e == 0 else ''} ${'today' if today and day == today.day else ''}">
-    <py:when test="0">&nbsp;</py:when>
-    <py:otherwise>
-      <h4>${day}</h4>
+    <div class="calrow row" py:for="week in weeks">
+    <div py:for="e, day in enumerate(week)" class="calbox span2 ${'offset1' if e == 0 else ''} ${'today' if today and day == today.day else ''}">
+      <h4 class="${'gray' if day.month != month else ''}">${day.day}</h4>
       <ul class="unstyled">
         <li py:for="wearing in wearing_map[day]">
           ${wearing_link(wearing)}
@@ -20,7 +18,6 @@
           <a href="${url_for('wear_on', day=day, month=month, year=year)}">Wear...</a>
         </li>
       </ul>
-    </py:otherwise>
     </div>
     </div>
   </body>

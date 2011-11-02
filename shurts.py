@@ -7,7 +7,6 @@ from flaskext import wtf
 
 from wtforms.ext.dateutil.fields import DateField
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
-from dateutil.relativedelta import relativedelta
 from decorator import decorator
 import collections
 import calendar
@@ -17,8 +16,7 @@ import genshi
 import urllib
 import uuid
 
-calendar.setfirstweekday(6)
-last_day_delta = relativedelta(day=31)
+cal = calendar.Calendar(calendar.SUNDAY)
 
 app = Flask(__name__)
 app.config.from_envvar('SHURT_SETTINGS')
@@ -186,15 +184,14 @@ def index():
 
 @app.route('/<int:year>/<int:month>')
 def wearing_calendar(month, year, today=None):
-    first_day = datetime.date(year, month, 1)
-    last_day = first_day + last_day_delta
+    weeks = cal.monthdatescalendar(year, month)
+    first_day, last_day = weeks[0][0], weeks[-1][-1]
     wearings = Wearing.query.filter(db.between(Wearing.when, first_day, last_day)).all()
     wearing_map = collections.defaultdict(list)
     for wearing in wearings:
-        wearing_map[wearing.when.day].append(wearing)
-    cal = calendar.monthcalendar(year, month)
+        wearing_map[wearing.when].append(wearing)
     return render_response('calendar.html',
-                           dict(calendar=cal, month=month, year=year, today=today, wearing_map=wearing_map))
+                           dict(weeks=weeks, month=month, year=year, today=today, wearing_map=wearing_map))
 
 class WearOnForm(wtf.Form):
     shirt = QuerySelectField(query_factory=lambda: Shirt.query.order_by(Shirt.name),
