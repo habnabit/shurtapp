@@ -8,7 +8,7 @@
   <body>
     <title>calendar: ${month}/${year}</title>
     <div class="calrow row" py:for="week in weeks">
-    <div py:for="e, day in enumerate(week)" class="calbox span2 ${'offset1' if e == 0 else ''} ${'today' if today and day == today.day else ''}">
+    <div py:for="e, day in enumerate(week)" class="calbox span2 ${'offset1' if e == 0 else ''} ${'today' if today and day == today else ''}">
       <h4 class="${'gray' if day.month != month else ''}">${day.day}</h4>
       <ul class="unstyled">
         <li py:for="wearing in wearing_map[day]">

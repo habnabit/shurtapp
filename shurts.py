@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for, request, g, session, abort, jsonify
+from flask import Flask, redirect, url_for, request, g, session, abort
 from flaskext.sqlalchemy import SQLAlchemy
 from flaskext.uploads import UploadSet, IMAGES, configure_uploads
 from flaskext.genshi import Genshi, render_response
@@ -179,7 +179,7 @@ def index():
     if not g.user and not Editor.query.first():
         session['allow_creation'] = True
         return redirect(url_for('login'))
-    today = datetime.datetime.now()
+    today = datetime.date.today()
     return wearing_calendar(today.month, today.year, today)
 
 @app.route('/<int:year>/<int:month>')
