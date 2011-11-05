@@ -85,6 +85,10 @@ class Photo(db.Model):
     def detail_url(self):
         return url_for('photo_detail', id=self.id)
 
+    @property
+    def disqus_identifier(self):
+        return 'photo-%d' % (self.id,)
+
 with_photos = rel_generator(Photo, 'photos')
 
 class PendingPhoto(db.Model):
@@ -118,6 +122,10 @@ class Shirt(db.Model):
     def detail_url(self):
         return url_for('shirt_detail', id=self.id)
 
+    @property
+    def disqus_identifier(self):
+        return 'shirt-%d' % (self.id,)
+
 @with_notes
 @with_photos
 @with_pending_photos
@@ -132,11 +140,19 @@ class Wearing(db.Model):
     def detail_url(self):
         return url_for('wearing_detail', id=self.id)
 
+    @property
+    def disqus_identifier(self):
+        return 'wearing-%d' % (self.id,)
+
 @app.before_request
 def lookup_current_user():
     g.user = None
     if 'openid' in session:
         g.user = Editor.query.filter_by(openid=session['openid']).first()
+
+@app.before_request
+def setup_g():
+    g.app_debug = app.debug
 
 @app.route('/login', methods=['GET', 'POST'])
 @oid.loginhandler

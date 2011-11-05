@@ -16,6 +16,8 @@
     <p>Added on ${photo.when.strftime('%d/%m/%Y %H%M')}.</p>
     ${notes_for(photo)}
 
+    ${disqus(photo)}
+
     <form py:if="g.user" method="POST" enctype="multipart/form-data" action="${url_for('photo_note', id=photo.id)}">
       ${form.hidden_tag()}
       <fieldset>

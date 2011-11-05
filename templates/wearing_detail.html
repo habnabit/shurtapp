@@ -15,6 +15,9 @@
       ${notes_for(photo)}
     </blockquote>
     ${notes_for(wearing)}
+
+    ${disqus(wearing)}
+
     <py:if test="g.user">
       <form method="POST" enctype="multipart/form-data" action="${url_for('wearing_note', id=wearing.id)}">
         ${form.hidden_tag()}
