@@ -148,6 +148,15 @@ class Wearing(db.Model):
 @app.before_request
 def lookup_current_user():
     g.user = None
+    g.cert_auth = False
+    components = request.environ.get('wsgi.client_cert_components')
+    if components and 'emailAddress' in components:
+        user = Editor.query.filter_by(email=components['emailAddress']).first()
+        if user is not None:
+            g.user = user
+            g.cert_auth = True
+            return
+
     if 'openid' in session:
         g.user = Editor.query.filter_by(openid=session['openid']).first()
 

@@ -76,6 +76,7 @@
             <li><a href="${url_for('index')}">home</a> /</li>
             <li><a href="${url_for('shirts')}">shirts</a> /</li>
             <li py:choose="">
+              <span py:when="g.cert_auth">using cert auth</span>
               <a py:when="g.user" href="${url_for('logout')}">logout</a>
               <a py:otherwise="" href="${url_for('login')}">login</a>
             </li>
