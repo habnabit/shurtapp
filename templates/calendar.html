@@ -15,7 +15,7 @@
           ${wearing_link(wearing)}
         </li>
         <li py:if="g.user">
-          <a href="${url_for('wear_on', day=day.day, month=month, year=year)}">Wear...</a>
+          <a href="${url_for('wear_on', day=day.day, month=day.month, year=day.year)}">Wear...</a>
         </li>
       </ul>
     </div>
