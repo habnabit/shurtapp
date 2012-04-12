@@ -54,6 +54,7 @@ def rel_generator(parent, plural, singular=None):
 class Editor(db.Model):
     __tablename__ = 'editors'
     openid = db.Column(db.String(), primary_key=True)
+    email = db.Column(db.String(), nullable=True, index=True)
 
 class Note(db.Model):
     __tablename__ = 'notes'
@@ -162,7 +163,7 @@ def login():
     if request.method == 'POST':
         openid = request.form.get('openid')
         if openid:
-            return oid.try_login(openid, ask_for=['nickname'])
+            return oid.try_login(openid, ask_for=['email'])
     return render_response('login.html', dict(next=oid.get_next_url(), error=oid.fetch_error()))
 
 @oid.after_login
@@ -170,7 +171,7 @@ def after_login(resp):
     session['openid'] = resp.identity_url
     user = Editor.query.filter_by(openid=resp.identity_url).first()
     if user is None and session.get('allow_creation'):
-        user = Editor(openid=resp.identity_url)
+        user = Editor(openid=resp.identity_url, email=resp.email)
         db.session.add(user)
         db.session.commit()
         del session['allow_creation']
