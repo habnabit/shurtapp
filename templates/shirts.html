@@ -12,7 +12,10 @@
     </script>
     <script type="text/javascript">
       $(function () {
-          $('table').tablesorter({sortList: [[0, 0]]});
+          $('table').tablesorter({
+              sortList: [[0, 0]],
+              dateFormat: "dd/mm/yy",
+          });
       });
     </script>
     <table class="statistics table zebra-striped">
@@ -25,19 +28,17 @@
         </tr>
       </thead>
       <tbody>
-        <tr py:for="shirt in shirts">
+        <tr py:for="shirt in shirts" py:with="mrw = shirt.most_recent_wearing">
           <td>${shirt_link(shirt)}</td>
           <td>${shirt.wearing_count}</td>
-          <td py:with="mrw = shirt.most_recent_wearing">
-            <py:choose test="mrw">
-              <py:when test="None">-</py:when>
-              <a href="${mrw.detail_url()}" py:otherwise="">
-                ${mrw.combined_when.strftime('%d/%m/%Y')}
-              </a>
-            </py:choose>
+          <td py:choose="mrw">
+            <py:when test="None">&mdash;</py:when>
+            <a href="${mrw.detail_url()}" py:otherwise="">
+              ${mrw.combined_when.strftime('%d/%m/%Y')}
+            </a>
           </td>
           <td py:choose="shirt.acquired">
-            <py:when test="None">-</py:when>
+            <py:when test="None">&mdash;</py:when>
             <py:otherwise>${shirt.acquired.strftime('%d/%m/%Y')}</py:otherwise>
           </td>
         </tr>
