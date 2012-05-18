@@ -325,11 +325,6 @@ def shirts():
     shirts = Shirt.query.order_by(Shirt.name).all()
     return render_response('shirts.html', dict(shirts=shirts))
 
-@app.route('/shirts/statistics')
-def shirt_statistics():
-    shirts = Shirt.query.order_by(Shirt.name).all()
-    return render_response('shirt_statistics.html', dict(shirts=shirts))
-
 @app.route('/shirts/<int:id>')
 def shirt_detail(id):
     shirt = Shirt.query.get(id)
