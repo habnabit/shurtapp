@@ -7,6 +7,7 @@ from flaskext import wtf
 
 from wtforms.ext.dateutil.fields import DateField
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
+from dateutil.tz import tzlocal
 from decorator import decorator
 import collections
 import calendar
@@ -83,8 +84,8 @@ class Photo(db.Model):
     def url(self):
         return photo_set.url(self.filename)
 
-    def detail_url(self):
-        return url_for('photo_detail', id=self.id)
+    def detail_url(self, **kw):
+        return url_for('photo_detail', id=self.id, **kw)
 
     @property
     def disqus_identifier(self):
@@ -120,8 +121,8 @@ class Shirt(db.Model):
     name = db.Column(db.String(), nullable=False)
     acquired = db.Column(db.Date())
 
-    def detail_url(self):
-        return url_for('shirt_detail', id=self.id)
+    def detail_url(self, **kw):
+        return url_for('shirt_detail', id=self.id, **kw)
 
     @property
     def disqus_identifier(self):
@@ -138,8 +139,8 @@ class Wearing(db.Model):
     when = db.Column(db.Date(), nullable=False, index=True)
     specifically_when = db.Column(db.Time())
 
-    def detail_url(self):
-        return url_for('wearing_detail', id=self.id)
+    def detail_url(self, **kw):
+        return url_for('wearing_detail', id=self.id, **kw)
 
     @property
     def disqus_identifier(self):
@@ -147,9 +148,11 @@ class Wearing(db.Model):
 
     @property
     def combined_when(self):
-        if not self.specifically_when:
-            return self.when
-        datetime.datetime.combine(self.when, self.specifically_when)
+        return datetime.datetime.combine(self.when, self.specifically_when or datetime.time())
+
+    @property
+    def local_combined_when(self):
+        return self.combined_when.replace(tzinfo=tzlocal())
 
 Shirt.wearing_count = db.column_property(
     db.select([db.func.count(Wearing.id)]).where(Wearing.shirt_id == Shirt.id))
@@ -219,6 +222,11 @@ def index():
         return redirect(url_for('login'))
     today = datetime.date.today()
     return wearing_calendar(today.month, today.year, today)
+
+@app.route('/rss.xml')
+def rss():
+    return render_response('rss.xml',
+                           dict(wearings=Wearing.query.order_by(Wearing.when.desc()).limit(10).all()))
 
 @app.route('/<int:year>/<int:month>')
 def wearing_calendar(month, year, today=None):

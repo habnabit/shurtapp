@@ -37,6 +37,7 @@
       </title>
       <link rel="stylesheet" href="${url_for('.static', filename='i-hate-cdns/bootstrap.min.css')}" />
       <link rel="stylesheet" href="${url_for('.static', filename='layout.css')}" />
+      <link rel="alternate" href="${url_for('rss')}" type="application/rss+xml" class="rss" title="shurts rss" />
       <script type="text/javascript" py:if="session.get('redirect_uri')">
         window.onload = function () {
             document.location = "${session.pop('redirect_uri')}";
