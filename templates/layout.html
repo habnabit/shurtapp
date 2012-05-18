@@ -27,30 +27,7 @@
     <small>${note.when.strftime('%d/%m/%Y %H%M')}</small>
   </blockquote>
 
-  <py:def function="disqus(o)">
-    <div id="disqus_thread"></div>
-    <script type="text/javascript">
-      /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
-      var disqus_shortname = 'shurts'; // required: replace example with your forum shortname
-      var disqus_developer = ${'true' if g.app_debug else 'false'};
-      var disqus_identifier = '${o.disqus_identifier}';
-      var disqus_title = '${o.disqus_identifier}';
-
-      /* * * DON'T EDIT BELOW THIS LINE * * */
-      (function() {
-          var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-          dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
-          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-      })();
-    </script>
-    <noscript>
-      Please enable JavaScript to view the
-      <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
-    </noscript>
-    <a href="http://disqus.com" class="dsq-brlink">
-      blog comments powered by <span class="logo-disqus">Disqus</span>
-    </a>
-  </py:def>
+  <py:def function="disqus(o)" />
 
   <py:match path="head" once="true">
     <head py:attrs="select('@*')">
