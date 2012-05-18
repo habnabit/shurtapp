@@ -12,7 +12,7 @@
     </script>
     <script type="text/javascript">
       $(function () {
-          $('table').tablesorter();
+          $('table').tablesorter({sortList: [[0, 0]]});
       });
     </script>
     <table class="statistics table zebra-striped">
@@ -31,12 +31,14 @@
           <td py:with="mrw = shirt.most_recent_wearing">
             <py:choose test="mrw">
               <py:when test="None">-</py:when>
-              <a href="${mrw.detail_url()}" py:otherwise="">${mrw.combined_when}</a>
+              <a href="${mrw.detail_url()}" py:otherwise="">
+                ${mrw.combined_when.strftime('%d/%m/%Y')}
+              </a>
             </py:choose>
           </td>
           <td py:choose="shirt.acquired">
             <py:when test="None">-</py:when>
-            <py:otherwise>${shirt.acquired}</py:otherwise>
+            <py:otherwise>${shirt.acquired.strftime('%d/%m/%Y')}</py:otherwise>
           </td>
         </tr>
       </tbody>

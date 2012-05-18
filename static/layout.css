@@ -61,6 +61,7 @@ form, fieldset { margin-bottom: 0; }
 
 blockquote small::before { content: "at "; }
 
+table.statistics th, table.statistics td { padding: 5px 10px; }
 table.statistics th.shirt {}
 table.statistics th.times-worn { width: 12%; }
 table.statistics th.most-recent-wearing { width: 18%; }

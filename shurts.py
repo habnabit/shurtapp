@@ -322,7 +322,7 @@ def wearing_note(id):
 
 @app.route('/shirts')
 def shirts():
-    shirts = Shirt.query.order_by(Shirt.name).all()
+    shirts = Shirt.query.all()
     return render_response('shirts.html', dict(shirts=shirts))
 
 @app.route('/shirts/<int:id>')
