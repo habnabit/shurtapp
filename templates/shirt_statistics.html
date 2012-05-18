@@ -1,0 +1,45 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+  <xi:include href="layout.html" />
+  <head>
+    <title>statistics</title>
+  </head>
+  <body>
+    <title>shirts: statistics</title>
+    <script type="text/javascript" src="${url_for('.static', filename='i-hate-cdns/jquery.min.js')}"></script>
+    <script type="text/javascript" src="${url_for('.static', filename='i-hate-cdns/jquery.tablesorter.min.js')}">
+    </script>
+    <script type="text/javascript">
+      $(function () {
+          $('table').tablesorter();
+      });
+    </script>
+    <table class="table zebra-striped">
+      <thead>
+        <tr>
+          <th>shirt</th>
+          <th>times worn</th>
+          <th>most recent wearing</th>
+          <th>acquired on</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr py:for="shirt in shirts">
+          <td>${shirt_link(shirt)}</td>
+          <td>${shirt.wearing_count}</td>
+          <td py:with="mrw = shirt.most_recent_wearing">
+            <py:choose test="mrw">
+              <py:when test="None">-</py:when>
+              <py:otherwise>${mrw.combined_when}</py:otherwise>
+            </py:choose>
+          </td>
+          <td py:choose="shirt.acquired">
+            <py:when test="None">-</py:when>
+            <py:otherwise>${shirt.acquired}</py:otherwise>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </body>
+</html>

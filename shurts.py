@@ -145,8 +145,17 @@ class Wearing(db.Model):
     def disqus_identifier(self):
         return 'wearing-%d' % (self.id,)
 
+    @property
+    def combined_when(self):
+        if not self.specifically_when:
+            return self.when
+        datetime.datetime.combine(self.when, self.specifically_when)
+
 Shirt.wearing_count = db.column_property(
     db.select([db.func.count(Wearing.id)]).where(Wearing.shirt_id == Shirt.id))
+Shirt.most_recent_wearing = db.relationship(
+    Wearing, uselist=False,
+    order_by=[Wearing.when.desc(), Wearing.specifically_when.desc()])
 
 @app.before_request
 def lookup_current_user():
@@ -315,6 +324,11 @@ def wearing_note(id):
 def shirts():
     shirts = Shirt.query.order_by(Shirt.name).all()
     return render_response('shirts.html', dict(shirts=shirts))
+
+@app.route('/shirts/statistics')
+def shirt_statistics():
+    shirts = Shirt.query.order_by(Shirt.name).all()
+    return render_response('shirt_statistics.html', dict(shirts=shirts))
 
 @app.route('/shirts/<int:id>')
 def shirt_detail(id):
