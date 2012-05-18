@@ -60,3 +60,8 @@ form, fieldset { margin-bottom: 0; }
 }
 
 blockquote small::before { content: "at "; }
+
+table.statistics th.shirt {}
+table.statistics th.times-worn { width: 12%; }
+table.statistics th.most-recent-wearing { width: 18%; }
+table.statistics th.acquired-on { width: 18%; }

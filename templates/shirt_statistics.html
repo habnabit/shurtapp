@@ -15,13 +15,13 @@
           $('table').tablesorter();
       });
     </script>
-    <table class="table zebra-striped">
+    <table class="statistics table zebra-striped">
       <thead>
         <tr>
-          <th>shirt</th>
-          <th>times worn</th>
-          <th>most recent wearing</th>
-          <th>acquired on</th>
+          <th class="shirt">shirt</th>
+          <th class="times-worn">times worn</th>
+          <th class="most-recent-wearing">most recent wearing</th>
+          <th class="acquired-on">acquired on</th>
         </tr>
       </thead>
       <tbody>
@@ -31,7 +31,7 @@
           <td py:with="mrw = shirt.most_recent_wearing">
             <py:choose test="mrw">
               <py:when test="None">-</py:when>
-              <py:otherwise>${mrw.combined_when}</py:otherwise>
+              <a href="${mrw.detail_url()}" py:otherwise="">${mrw.combined_when}</a>
             </py:choose>
           </td>
           <td py:choose="shirt.acquired">
