@@ -34,13 +34,13 @@
         <tr py:for="shirt in shirts" py:with="mrw = shirt.most_recent_wearing">
           <td>${shirt_link(shirt)}</td>
           <td>${shirt.wearing_count}</td>
-          <td data-sort-key="${mrw.combined_when if mrw else ''}" py:choose="mrw">
+          <td data-sort-key="${mrw.combined_when if mrw else '0000-00-00'}" py:choose="mrw">
             <py:when test="None">&mdash;</py:when>
             <a href="${mrw.detail_url()}" py:otherwise="">
               ${mrw.combined_when.strftime('%d/%m/%Y')}
             </a>
           </td>
-          <td data-sort-key="${shirt.acquired if shirt.acquired else ''}" py:choose="shirt.acquired">
+          <td data-sort-key="${shirt.acquired if shirt.acquired else '0000-00-00'}" py:choose="shirt.acquired">
             <py:when test="None">&mdash;</py:when>
             <py:otherwise>${shirt.acquired.strftime('%d/%m/%Y')}</py:otherwise>
           </td>
