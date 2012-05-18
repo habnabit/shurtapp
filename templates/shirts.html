@@ -13,8 +13,11 @@
     <script type="text/javascript">
       $(function () {
           $('table').tablesorter({
+              textExtraction: function (node) {
+                  var jnode = $(node);
+                  return jnode.data('sort-key') || jnode.text();
+              },
               sortList: [[0, 0]],
-              dateFormat: "dd/mm/yy",
           });
       });
     </script>
@@ -31,13 +34,13 @@
         <tr py:for="shirt in shirts" py:with="mrw = shirt.most_recent_wearing">
           <td>${shirt_link(shirt)}</td>
           <td>${shirt.wearing_count}</td>
-          <td py:choose="mrw">
+          <td data-sort-key="${mrw.combined_when if mrw else ''}" py:choose="mrw">
             <py:when test="None">&mdash;</py:when>
             <a href="${mrw.detail_url()}" py:otherwise="">
               ${mrw.combined_when.strftime('%d/%m/%Y')}
             </a>
           </td>
-          <td py:choose="shirt.acquired">
+          <td data-sort-key="${shirt.acquired if shirt.acquired else ''}" py:choose="shirt.acquired">
             <py:when test="None">&mdash;</py:when>
             <py:otherwise>${shirt.acquired.strftime('%d/%m/%Y')}</py:otherwise>
           </td>
