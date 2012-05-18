@@ -145,6 +145,9 @@ class Wearing(db.Model):
     def disqus_identifier(self):
         return 'wearing-%d' % (self.id,)
 
+Shirt.wearing_count = db.column_property(
+    db.select([db.func.count(Wearing.id)]).where(Wearing.shirt_id == Shirt.id))
+
 @app.before_request
 def lookup_current_user():
     g.user = None

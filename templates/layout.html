@@ -10,8 +10,9 @@
     <a href="${url_for('shirt_detail', id=s.id)}">${s.name}</a> ${has_photo(s)}
   </py:def>
 
-  <py:def function="wearing_link(w, full=False)" py:with="url = url_for('wearing_detail', id=w.id)">
+  <py:def function="wearing_link(w, full=False, date_only=False)" py:with="url = url_for('wearing_detail', id=w.id)">
     <py:choose test="">
+      <a href="${url}" py:when="date_only">${w.when.strftime('%d/%m/%Y')}</a>
       <a href="${url}" py:when="full">wearing ${w.shirt.name} on ${w.when.strftime('%d/%m/%Y')}</a>
       <a href="${url}" py:otherwise="">${w.shirt.name}</a>
     </py:choose>

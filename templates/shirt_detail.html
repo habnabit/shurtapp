@@ -17,6 +17,15 @@
     </blockquote>
     ${notes_for(shirt)}
 
+    <div py:if="shirt.wearing_count">
+      <p>Worn ${shirt.wearing_count} times:</p>
+      <ol>
+        <li py:for="wearing in shirt.wearings">
+          ${wearing_link(wearing, date_only=True)}
+        </li>
+      </ol>
+    </div>
+
     ${disqus(shirt)}
 
     <form py:if="g.user" method="POST" enctype="multipart/form-data" action="${url_for('shirt_note', id=shirt.id)}">

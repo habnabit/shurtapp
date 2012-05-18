@@ -10,6 +10,11 @@
     <ul>
       <li py:for="shirt in shirts">
         ${shirt_link(shirt)}
+        <py:choose test="shirt.wearing_count">
+          <py:when test="0">(never worn)</py:when>
+          <py:when test="1">(worn once)</py:when>
+          <py:otherwise>(worn ${shirt.wearing_count} times)</py:otherwise>
+        </py:choose>
         <py:if test="shirt.acquired">
           (${shirt.acquired})
         </py:if>
