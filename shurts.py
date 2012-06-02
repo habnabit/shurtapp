@@ -269,13 +269,13 @@ class AddNoteForm(wtf.Form):
 
 @app.route('/photos/<int:id>')
 def photo_detail(id):
-    photo = Photo.query.get(id)
+    photo = Photo.query.get_or_404(id)
     return render_response('photo_detail.html', dict(photo=photo, form=AddNoteForm()))
 
 @app.route('/photos/<int:id>/note', methods=['POST'])
 @needs_login
 def photo_note(id):
-    photo = Photo.query.get(id)
+    photo = Photo.query.get_or_404(id)
     form = AddNoteForm()
     if form.validate_on_submit():
         note = Photo.Note(photo=photo, note=form.note.data)
@@ -314,13 +314,13 @@ def add_photo_note(form, model, **model_params):
 
 @app.route('/wearings/<int:id>')
 def wearing_detail(id):
-    wearing = Wearing.query.get(id)
+    wearing = Wearing.query.get_or_404(id)
     return render_response('wearing_detail.html', dict(wearing=wearing, form=AddPhotoNoteForm()))
 
 @app.route('/wearings/<int:id>/note', methods=['POST'])
 @needs_login
 def wearing_note(id):
-    wearing = Wearing.query.get(id)
+    wearing = Wearing.query.get_or_404(id)
     form = AddPhotoNoteForm()
     if form.validate_on_submit():
         add_photo_note(form, Wearing, wearing=wearing)
@@ -335,13 +335,13 @@ def shirts():
 
 @app.route('/shirts/<int:id>')
 def shirt_detail(id):
-    shirt = Shirt.query.get(id)
+    shirt = Shirt.query.get_or_404(id)
     return render_response('shirt_detail.html', dict(shirt=shirt, form=AddPhotoNoteForm()))
 
 @app.route('/shirts/<int:id>/note', methods=['POST'])
 @needs_login
 def shirt_note(id):
-    shirt = Shirt.query.get(id)
+    shirt = Shirt.query.get_or_404(id)
     form = AddPhotoNoteForm()
     if form.validate_on_submit():
         add_photo_note(form, Shirt, shirt=shirt)
@@ -356,7 +356,7 @@ class EditShirtForm(wtf.Form):
 @app.route('/shirts/<int:id>/edit', methods=['GET', 'POST'])
 @needs_login
 def shirt_edit(id):
-    shirt = Shirt.query.get(id)
+    shirt = Shirt.query.get_or_404(id)
     form = EditShirtForm(obj=shirt)
     if form.validate_on_submit():
         form.populate_obj(shirt)
@@ -397,7 +397,7 @@ class DeleteForm(wtf.Form):
 @app.route('/shirts/<int:id>/delete', methods=['GET', 'POST'])
 @needs_login
 def shirt_delete(id):
-    shirt = Shirt.query.get(id)
+    shirt = Shirt.query.get_or_404(id)
     form = DeleteForm()
     if form.validate_on_submit():
         db.session.delete(shirt)
@@ -408,7 +408,7 @@ def shirt_delete(id):
 @app.route('/wearings/<int:id>/delete', methods=['GET', 'POST'])
 @needs_login
 def wearing_delete(id):
-    wearing = Wearing.query.get(id)
+    wearing = Wearing.query.get_or_404(id)
     form = DeleteForm()
     if form.validate_on_submit():
         db.session.delete(wearing)
@@ -419,7 +419,7 @@ def wearing_delete(id):
 @app.route('/photos/<int:id>/delete', methods=['GET', 'POST'])
 @needs_login
 def photo_delete(id):
-    photo = Photo.query.get(id)
+    photo = Photo.query.get_or_404(id)
     form = DeleteForm()
     if form.validate_on_submit():
         db.session.delete(photo)
