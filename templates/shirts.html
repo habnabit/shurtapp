@@ -33,7 +33,9 @@
       <tbody>
         <tr py:for="shirt in shirts" py:with="mrw = shirt.most_recent_wearing">
           <td>${shirt_link(shirt)}</td>
-          <td>${shirt.wearing_count}</td>
+          <td title="wearing average ${'%0.3f' % (shirt.wearing_count / n_wearings,)}">
+            ${shirt.wearing_count}
+          </td>
           <td data-sort-key="${mrw.combined_when if mrw else '0000-00-00'}" py:choose="mrw">
             <py:when test="None">&mdash;</py:when>
             <a href="${mrw.detail_url()}" py:otherwise="">

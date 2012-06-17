@@ -331,7 +331,8 @@ def wearing_note(id):
 @app.route('/shirts')
 def shirts():
     shirts = Shirt.query.all()
-    return render_response('shirts.html', dict(shirts=shirts))
+    n_wearings = float(Wearing.query.count())
+    return render_response('shirts.html', dict(shirts=shirts, n_wearings=n_wearings))
 
 @app.route('/shirts/<int:id>')
 def shirt_detail(id):
