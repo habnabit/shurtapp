@@ -8,6 +8,7 @@ from flaskext import wtf
 from wtforms.ext.dateutil.fields import DateField
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from dateutil.tz import tzlocal
+from dateutil.relativedelta import relativedelta
 from decorator import decorator
 import collections
 import calendar
@@ -16,8 +17,22 @@ import markdown
 import genshi
 import urllib
 import uuid
+import re
 
 cal = calendar.Calendar(calendar.SUNDAY)
+
+_time_expansions = dict(
+    s='seconds', d='days', mo='months',
+    w='weeks', wk='weeks',
+    y='years', yr='years',
+    m='minutes', mi='minutes',
+)
+_time_regex = re.compile(r'(\d+)([sd]|wk?|yr?|m[io]?)', re.I)
+def parse_time_string(s):
+    params = collections.defaultdict(int)
+    for m in _time_regex.finditer(s):
+        params[_time_expansions[m.group(2)]] += int(m.group(1))
+    return relativedelta(**params)
 
 app = Flask(__name__)
 app.config.from_envvar('SHURT_SETTINGS')
@@ -331,6 +346,14 @@ def wearing_note(id):
 @app.route('/shirts')
 def shirts():
     shirts = Shirt.query.all()
+    n_wearings = float(Wearing.query.count())
+    return render_response('shirts.html', dict(shirts=shirts, n_wearings=n_wearings))
+
+@app.route('/shirts/not-worn-since/<when>')
+def shirts_before(when):
+    before = datetime.datetime.now() - parse_time_string(when)
+    shirts_after = db.session.query(Wearing.shirt_id).filter(Wearing.when > before)
+    shirts = Shirt.query.filter(~Shirt.id.in_(shirts_after)).all()
     n_wearings = float(Wearing.query.count())
     return render_response('shirts.html', dict(shirts=shirts, n_wearings=n_wearings))
 
