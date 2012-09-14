@@ -3,7 +3,7 @@ from flaskext.sqlalchemy import SQLAlchemy
 from flaskext.uploads import UploadSet, IMAGES, configure_uploads
 from flaskext.genshi import Genshi, render_response
 from flaskext.openid import OpenID
-from flaskext import wtf
+from flask.ext import wtf
 
 from wtforms.ext.dateutil.fields import DateField
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
@@ -322,7 +322,7 @@ class AddPhotoNoteForm(wtf.Form):
     submit_email = wtf.SubmitField('Photo by e-mail')
 
     def validate_note(self, field):
-        if not field.data and not self['photo'].data and not self['submit_email'].data:
+        if not field.data and not self.submit_email.data and not self.photo.has_file():
             raise wtf.ValidationError('At least a note or a photo must be specified')
 
 def add_photo_note(form, model, **model_params):
