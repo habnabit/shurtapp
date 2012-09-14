@@ -18,6 +18,7 @@ import genshi
 import urllib
 import uuid
 import re
+import os
 
 cal = calendar.Calendar(calendar.SUNDAY)
 
@@ -57,9 +58,11 @@ def rel_generator(parent, plural, singular=None):
             {
                 '__tablename__': '%s_%s' % (lower_child, plural),
                 '__mapper_args__': dict(polymorphic_identity=lower_child),
+                'parent_ref_name': lower_child,
+                'parent_type': cls,
                 singular + '_id': db.Column(db.Integer(), db.ForeignKey(parent.id), primary_key=True),
                 lower_child + '_id': child_fk,
-                lower_child: db.relationship(cls, backref=db.backref(plural, cascade='all, delete-orphan'))
+                lower_child: db.relationship(cls, backref=db.backref(plural, cascade='all, delete-orphan')),
             }
         )
         setattr(cls, 'has_' + singular, db.column_property(db.exists(['*']).where(cls.id == child_fk)))
@@ -91,12 +94,14 @@ class Photo(db.Model):
     __tablename__ = 'photos'
     id = db.Column(db.Integer(), primary_key=True)
     when = db.Column(db.DateTime(), nullable=False, default=datetime.datetime.now)
-    filename = db.Column(db.String(), nullable=False)
+    filename = db.Column(db.String(), nullable=True)
     type = db.Column(db.String())
     __mapper_args__ = dict(polymorphic_on=type)
 
     @property
     def url(self):
+        if self.filename is None:
+            return url_for('static', filename='processing.png')
         return photo_set.url(self.filename)
 
     def detail_url(self, **kw):
@@ -105,6 +110,12 @@ class Photo(db.Model):
     @property
     def disqus_identifier(self):
         return 'photo-%d' % (self.id,)
+
+    def enqueue_processing(self, orig_filename):
+        basename = os.path.basename(orig_filename)
+        db.session.flush()
+        queue_path = os.path.join(app.config['PHOTO_QUEUE_DIR'], '%s-%s' % (self.id, basename))
+        os.rename(orig_filename, queue_path)
 
 with_photos = rel_generator(Photo, 'photos')
 
@@ -124,6 +135,11 @@ class PendingPhoto(db.Model):
     @property
     def mailto_link(self):
         return 'mailto:%s?subject=%s' % (app.config['NOTES_EMAIL'], urllib.quote(self.key))
+
+    def as_photo(self, **kw):
+        kw.setdefault(self.parent_ref_name, getattr(self, self.parent_ref_name))
+        kw.setdefault('when', self.when)
+        return self.parent_type.Photo(**kw)
 
 with_pending_photos = rel_generator(PendingPhoto, 'pending_photos', singular='pending_photo')
 
@@ -311,8 +327,10 @@ class AddPhotoNoteForm(wtf.Form):
 
 def add_photo_note(form, model, **model_params):
     if request.files.get('photo'):
-        photo = model.Photo(filename=photo_set.save(request.files['photo']), **model_params)
+        photo = model.Photo(**model_params)
         db.session.add(photo)
+        photo.enqueue_processing(
+            photo_set.path(photo_set.save(request.files['photo'])))
         if form.note.data:
             note = Photo.Note(note=form.note.data, photo=photo)
             db.session.add(note)
@@ -402,8 +420,10 @@ def shirt_add():
             acquired=form.acquired.data)
         db.session.add(shirt)
         if request.files.get('photo'):
-            photo = Shirt.Photo(filename=photo_set.save(request.files['photo']), shirt=shirt)
+            photo = Shirt.Photo(shirt=shirt)
             db.session.add(photo)
+            photo.enqueue_processing(
+                photo_set.path(photo_set.save(request.files['photo'])))
         if form.description.data:
             note = Shirt.Note(note=form.description.data, shirt=shirt)
             db.session.add(note)
