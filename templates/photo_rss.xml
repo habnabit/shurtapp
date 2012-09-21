@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<rss version="2.0" xmlns:py="http://genshi.edgewall.org/">
+  <channel>
+    <title>shurts: photos</title>
+    <link>${url_for('index', _external=True)}</link>
+    <description>recent photos</description>
+    <item py:for="photo in photos">
+      <title py:choose="photo.type">
+        photo of <py:when test="'shirt'">${photo.shirt.name}</py:when
+        ><py:when test="'wearing'">wearing ${photo.wearing.shirt.name}</py:when>
+      </title>
+      <link>${photo.detail_url(_external=True)}</link>
+      <pubDate>${(photo.when.strftime('%a, %d %b %Y %H:%M:%S %z'))}</pubDate>
+      <guid>${photo.detail_url(_external=True)}</guid>
+      <description>
+        &lt;img src="${photo.url}"&gt;
+      </description>
+    </item>
+  </channel>
+</rss>

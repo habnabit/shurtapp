@@ -255,9 +255,8 @@ def index():
     return wearing_calendar(today.month, today.year, today)
 
 @app.route('/rss.xml')
-def rss():
-    return render_response('rss.xml',
-                           dict(wearings=Wearing.query.order_by(Wearing.when.desc()).limit(10).all()))
+def root_rss_redirect():
+    return redirect(url_for('wearing_rss'))
 
 @app.route('/<int:year>/<int:month>')
 def wearing_calendar(month, year, today=None):
@@ -298,6 +297,14 @@ class AddNoteForm(wtf.Form):
     note = wtf.TextField('Add a note', widget=wtf.TextArea(), validators=[wtf.required()])
     submit_note = wtf.SubmitField('Note')
 
+@app.route('/photos/rss.xml')
+def photo_rss():
+    photos = (Photo.query
+              .filter(Photo.filename != None)
+              .order_by(Photo.when.desc())
+              .limit(10).all())
+    return render_response('photo_rss.xml', dict(photos=photos))
+
 @app.route('/photos/<int:id>')
 def photo_detail(id):
     photo = Photo.query.get_or_404(id)
@@ -314,6 +321,11 @@ def photo_note(id):
         db.session.commit()
         return redirect(url_for('photo_detail', id=id))
     return render_response('photo_detail.html', dict(photo=photo, form=form))
+
+@app.route('/wearings/rss.xml')
+def wearing_rss():
+    return render_response('wearing_rss.xml',
+                           dict(wearings=Wearing.query.order_by(Wearing.when.desc()).limit(10).all()))
 
 class AddPhotoNoteForm(wtf.Form):
     photo = wtf.FileField('Add a photo', validators=[wtf.optional(), wtf.file_allowed(photo_set)])

@@ -37,7 +37,10 @@
       </title>
       <link rel="stylesheet" href="${url_for('.static', filename='i-hate-cdns/bootstrap.min.css')}" />
       <link rel="stylesheet" href="${url_for('.static', filename='layout.css')}" />
-      <link rel="alternate" href="${url_for('rss')}" type="application/rss+xml" class="rss" title="shurts rss" />
+      <link rel="alternate" href="${url_for('wearing_rss')}"
+          type="application/rss+xml" class="rss" title="shurt wearings rss" />
+      <link rel="alternate" href="${url_for('photo_rss')}"
+          type="application/rss+xml" class="rss" title="shurt photos rss" />
       <script type="text/javascript" py:if="session.get('redirect_uri')">
         window.onload = function () {
             document.location = "${session.pop('redirect_uri')}";
