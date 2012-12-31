@@ -27,9 +27,12 @@ def pick_epsilon(chains, previous, preferred_epsilon):
 def suggest_next(wearings, count, preferred_epsilon, order=3):
     preferred_epsilon = list(preferred_epsilon)
     chains = build_chains(wearings, order)
-    ret = [w.shirt for w in wearings[-order:]]
+    shirts = [w.shirt for w in wearings[-order:]]
+    ret = []
     for x in xrange(count):
-        epsilon = pick_epsilon(chains, ret[-order + 1:], preferred_epsilon)
-        choices = chains[tuple(ret[-order:])] + [epsilon]
-        ret.append(random.choice(choices))
-    return ret[order:]
+        epsilon = pick_epsilon(chains, shirts[-order + 1:], preferred_epsilon)
+        choices = chains[tuple(shirts[-order:])] + [epsilon]
+        choice = random.choice(choices)
+        shirts.append(choice)
+        ret.append((choice, len(choices), choice is epsilon))
+    return ret

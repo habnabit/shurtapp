@@ -494,7 +494,11 @@ def suggestions(count=10, order=2):
     preferred_epsilon.sort(key=lambda ss: ss.most_recent_wearing.combined_when)
     import suggest
     suggestions = suggest.suggest_next(wearings, count, preferred_epsilon, order)
+    shirts = set(shirt for shirt, _, _, in suggestions)
     return jsonify({
-        'suggestions': [s.id for s in suggestions],
-        'shirts': dict((s.id, s.name) for s in set(suggestions)),
+        'suggestions': [
+            dict(shirt=shirt.id, n_choices=n_choices, is_epsilon=is_epsilon)
+            for shirt, n_choices, is_epsilon in suggestions
+        ],
+        'shirts': dict((s.id, s.name) for s in shirts),
     })
