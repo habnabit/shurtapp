@@ -17,9 +17,10 @@ def expochoice(seq):
 
 def pick_epsilon(chains, previous, preferred_epsilon):
     previous = tuple(previous)
-    options = [s for s in preferred_epsilon if previous + (s,) in chains]
-    if not options:
-        options = preferred_epsilon
+    # preserving order (since list sorting is stable), rearrange
+    # preferred_epsilon so that the options that are in chains end up first
+    # (and therefore are more likely to be chosen)
+    options = sorted(preferred_epsilon, key=lambda s: previous + (s,) not in chains)
     ret = expochoice(options)
     preferred_epsilon.remove(ret)
     return ret
