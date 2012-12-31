@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for, request, g, session, abort
+from flask import Flask, redirect, url_for, request, g, session, abort, jsonify
 from flaskext.sqlalchemy import SQLAlchemy
 from flaskext.uploads import UploadSet, IMAGES, configure_uploads
 from flaskext.genshi import Genshi, render_response
@@ -158,6 +158,9 @@ class Shirt(db.Model):
     def disqus_identifier(self):
         return 'shirt-%d' % (self.id,)
 
+    def __repr__(self):
+        return '<Shurt %r at %#x>' % (self.name, id(self))
+
 @with_notes
 @with_photos
 @with_pending_photos
@@ -189,6 +192,7 @@ Shirt.wearing_count = db.column_property(
 Shirt.most_recent_wearing = db.relationship(
     Wearing, uselist=False,
     order_by=[Wearing.when.desc(), Wearing.specifically_when.desc()])
+Shirt.has_wearing = db.column_property(db.exists(['*']).where(Shirt.id == Wearing.shirt_id))
 
 @app.before_request
 def lookup_current_user():
@@ -481,3 +485,16 @@ def photo_delete(id):
         db.session.commit()
         return redirect(url_for('index'))
     return render_response('confirm_delete.html', dict(form=form, type='photo', obj=photo))
+
+@app.route('/api/suggestions.json')
+@needs_login
+def suggestions(count=10, order=2):
+    wearings = Wearing.query.order_by(Wearing.when, Wearing.specifically_when).all()
+    preferred_epsilon = Shirt.query.filter_by(has_wearing=True).all()
+    preferred_epsilon.sort(key=lambda ss: ss.most_recent_wearing.combined_when)
+    import suggest
+    suggestions = suggest.suggest_next(wearings, count, preferred_epsilon, order)
+    return jsonify({
+        'suggestions': [s.id for s in suggestions],
+        'shirts': {s.id: s.name for s in set(suggestions)},
+    })
