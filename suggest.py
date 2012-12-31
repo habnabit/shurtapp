@@ -9,7 +9,7 @@ def build_chains(wearings, order=3):
     return chains
 
 def expochoice(seq):
-    lambd = 2. / len(seq)
+    lambd = 4. / len(seq)
     while True:
         index = int(random.expovariate(lambd))
         if index < len(seq):
