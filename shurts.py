@@ -496,5 +496,5 @@ def suggestions(count=10, order=2):
     suggestions = suggest.suggest_next(wearings, count, preferred_epsilon, order)
     return jsonify({
         'suggestions': [s.id for s in suggestions],
-        'shirts': {s.id: s.name for s in set(suggestions)},
+        'shirts': dict((s.id, s.name) for s in set(suggestions)),
     })
