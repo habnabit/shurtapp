@@ -1,0 +1,6 @@
+SQLALCHEMY_DATABASE_URI = 'sqlite:///testing.db'
+UPLOADED_PHOTOS_DEST = '/tmp'
+UPLOADED_PHOTOS_URL = 'http://localhost:5000/static/photos/'
+PHOTO_DEST = 'static/photos'
+SECRET_KEY = 'dongs'
+NOTES_EMAIL = 'testing@habnab.it'
