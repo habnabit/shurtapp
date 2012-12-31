@@ -18,7 +18,6 @@ import genshi
 import urllib
 import uuid
 import re
-import os
 
 cal = calendar.Calendar(calendar.SUNDAY)
 
@@ -112,10 +111,10 @@ class Photo(db.Model):
         return 'photo-%d' % (self.id,)
 
     def enqueue_processing(self, orig_filename):
-        basename = os.path.basename(orig_filename)
         db.session.flush()
-        queue_path = os.path.join(app.config['PHOTO_QUEUE_DIR'], '%s-%s' % (self.id, basename))
-        os.rename(orig_filename, queue_path)
+        import tiedye
+        from twisted.internet import reactor
+        reactor.callFromThread(tiedye.processImage, orig_filename, self.id)
 
 with_photos = rel_generator(Photo, 'photos')
 

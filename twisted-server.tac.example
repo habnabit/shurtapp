@@ -2,32 +2,12 @@ from twisted.application.internet import SSLServer, TCPServer
 from twisted.application import service
 from twisted.internet import ssl, reactor
 from twisted.web.server import Site, NOT_DONE_YET
-from twisted.web.wsgi import WSGIResource, _WSGIResponse
 
 from OpenSSL import SSL
+import tiedye
 import shurts
 
-# unfortunately, _WSGIResponse is both internal *and* not specified as a
-# factory on WSGIResource. code duplication ahoy!
-
-# oh and don't frown too much about the using internal twisted APIs. I'm
-# already frowning a bunch; I wish there was a better way. :(
-class _CertDetailWSGIResponse(_WSGIResponse):
-    def __init__(self, reactor, threadpool, application, request):
-        _WSGIResponse.__init__(self, reactor, threadpool, application, request)
-        if request.isSecure():
-            cert = request.transport.getPeerCertificate()
-            components = dict(cert.get_subject().get_components())
-            self.environ['wsgi.client_cert_components'] = components
-
-class CertDetailWSGIResource(WSGIResource):
-    def render(self, request):
-        response = _CertDetailWSGIResponse(
-            self._reactor, self._threadpool, self._application, request)
-        response.start()
-        return NOT_DONE_YET
-
-site = Site(CertDetailWSGIResource(reactor, reactor.getThreadPool(), shurts.app))
+site = Site(tiedye.CertDetailWSGIResource(reactor, reactor.getThreadPool(), shurts.app))
 contextFac = ssl.DefaultOpenSSLContextFactory('server.key', 'server.crt')
 
 def verifyCallback(connection, x509, errnum, errdepth, ok):
@@ -41,3 +21,4 @@ application = service.Application('shurts')
 
 SSLServer(5443, site, contextFac).setServiceParent(application)
 TCPServer(5000, site).setServiceParent(application)
+TCPServer(8025, tiedye.PhotoSMTPFactory()).setServiceParent(application)

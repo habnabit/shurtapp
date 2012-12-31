@@ -1,6 +1,8 @@
 "Tie-dye is twisted shurts."
 from zope.interface import implements
 
+from twisted.web.server import NOT_DONE_YET
+from twisted.web.wsgi import WSGIResource, _WSGIResponse
 from twisted.internet import defer, threads, utils
 from twisted.python import log
 from twisted.mail import smtp
@@ -41,16 +43,18 @@ def updatePhoto(session, photo, filename):
     photo.filename = filename
 
 @defer.inlineCallbacks
-def processImage(infile):
+def processImage(infile, photo_id=None):
     log.msg('processing %r' % (infile,))
     basename = os.path.basename(infile)
-    photo = yield getPhoto(basename.split('-', 1)[0])
+    if photo_id is None:
+        photo_id = basename.split('-', 1)[0]
+    photo = yield getPhoto(photo_id)
     if photo is None:
         os.remove(infile)
-        log.msg('invalid filename on %r' % (infile,))
+        log.msg("couldn't find photo for %r (%r)" % (infile, photo_id))
         return
 
-    outfile = os.path.join(shurts.app.config['PHOTO_QUEUE_DEST'], basename)
+    outfile = os.path.join(shurts.app.config['PHOTO_DEST'], basename)
     processingOutput = yield utils.getProcessOutput(
         '/bin/sh', ['photo-pipeline/process-image.sh', infile, outfile])
     if processingOutput:
@@ -58,18 +62,6 @@ def processImage(infile):
     yield updatePhoto(photo, basename)
     os.remove(infile)
     log.msg('processed %r to %r' % (infile, outfile))
-
-class ProcessorState(object):
-    def __init__(self):
-        self.processing = set()
-
-    def scan(self):
-        inQueue = set(os.listdir(shurts.app.config['PHOTO_QUEUE_DIR']))
-        for image in inQueue - self.processing:
-            self.processing.add(image)
-            d = processImage(os.path.join(shurts.app.config['PHOTO_QUEUE_DIR'], image))
-            d.addErrback(log.err, 'error processing %r' % (image,))
-            d.addCallback(lambda r, im: self.processing.discard(im), image)
 
 def extract_first_image(email, photo_id):
     for part in email.walk():
@@ -136,15 +128,22 @@ class PhotoSMTPFactory(smtp.SMTPFactory):
         p.delivery = PhotoMessageDelivery()
         return p
 
-def main():
-    from twisted.application import internet
-    from twisted.application import service
+# unfortunately, _WSGIResponse is both internal *and* not specified as a
+# factory on WSGIResource. code duplication ahoy!
 
-    a = service.Application("shurts twisted daemon")
-    processor = ProcessorState()
-    internet.TimerService(20, processor.scan).setServiceParent(a)
-    internet.TCPServer(8025, PhotoSMTPFactory()).setServiceParent(a)
+# oh and don't frown too much about the using internal twisted APIs. I'm
+# already frowning a bunch; I wish there was a better way. :(
+class _CertDetailWSGIResponse(_WSGIResponse):
+    def __init__(self, reactor, threadpool, application, request):
+        _WSGIResponse.__init__(self, reactor, threadpool, application, request)
+        if request.isSecure():
+            cert = request.transport.getPeerCertificate()
+            components = dict(cert.get_subject().get_components())
+            self.environ['wsgi.client_cert_components'] = components
 
-    return a
-
-application = main()
+class CertDetailWSGIResource(WSGIResource):
+    def render(self, request):
+        response = _CertDetailWSGIResponse(
+            self._reactor, self._threadpool, self._application, request)
+        response.start()
+        return NOT_DONE_YET
