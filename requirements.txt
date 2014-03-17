@@ -1,9 +1,9 @@
 python-dateutil<2.0
 decorator
-Flask
-Flask-Genshi
-Flask-OpenID
-Flask-SQLAlchemy
-Flask-Uploads
-Flask-WTF
+Flask==0.9
+Flask-Genshi==0.5.1
+Flask-OpenID==1.0.1
+Flask-SQLAlchemy==0.15
+Flask-Uploads==0.1.3
+Flask-WTF==0.8
 Markdown
