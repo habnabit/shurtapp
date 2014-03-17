@@ -1,7 +1,7 @@
 from twisted.application.internet import SSLServer, TCPServer
 from twisted.application import service
 from twisted.internet import ssl, reactor
-from twisted.web.server import Site, NOT_DONE_YET
+from twisted.web.server import Site
 
 from OpenSSL import SSL
 import tiedye
