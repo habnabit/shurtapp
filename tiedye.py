@@ -1,4 +1,5 @@
 "Tie-dye is twisted shurts."
+from OpenSSL.crypto import FILETYPE_PEM, load_certificate
 from zope.interface import implements
 
 from twisted.web.server import NOT_DONE_YET
@@ -136,8 +137,14 @@ class PhotoSMTPFactory(smtp.SMTPFactory):
 class _CertDetailWSGIResponse(_WSGIResponse):
     def __init__(self, reactor, threadpool, application, request):
         _WSGIResponse.__init__(self, reactor, threadpool, application, request)
+        cert = None
         if request.isSecure():
             cert = request.transport.getPeerCertificate()
+        elif request.getHeader('X-SSL-Client-Cert'):
+            pem = request.getHeader('X-SSL-Client-Cert')
+            pem = '\n'.join(line.strip() for line in pem.splitlines())
+            cert = load_certificate(FILETYPE_PEM, pem)
+        if cert:
             components = dict(cert.get_subject().get_components())
             self.environ['wsgi.client_cert_components'] = components
 
